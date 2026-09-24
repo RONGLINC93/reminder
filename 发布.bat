@@ -55,7 +55,8 @@ if exist "dist\.last-release.json" (
 )
 echo.
 echo   详情: dist\.last-release.json
-pause
+echo   (5 秒后自动关闭窗口)
+timeout /t 5 /nobreak >nul
 exit /b 0
 
 :warn
@@ -67,11 +68,13 @@ if exist "dist\.last-release.json" (
 )
 echo.
 echo   失败资产可手动重传到上方 Release URL
-pause
+echo   (5 秒后自动关闭窗口)
+timeout /t 5 /nobreak >nul
 exit /b 2
 
 :fail
 echo.
 echo [ERROR] 发布失败, 见上方输出。
-pause
+echo   (5 秒后自动关闭窗口)
+timeout /t 5 /nobreak >nul
 exit /b 1
