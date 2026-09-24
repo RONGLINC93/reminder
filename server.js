@@ -8,7 +8,10 @@ const { lunarInfoOf, nextLunarDate } = require('./lib/lunar');
 const PORT = process.env.PORT || 9530;
 const CHECK_INTERVAL_MS = 60 * 1000;
 const ROOT = __dirname;
-const DATA_DIR = path.join(ROOT, 'data');
+// 数据目录：默认程序目录下的 data/；fnOS 等环境可通过 REMINDER_DATA_DIR 指定到共享目录
+const DATA_DIR = process.env.REMINDER_DATA_DIR || path.join(ROOT, 'data');
+// 监听地址：默认 '::'（IPv6 双栈，同时接受 IPv4 与 IPv6 访问），不支持时自动回退 0.0.0.0
+const HOST = process.env.HOST || '::';
 const DATA_FILE = path.join(DATA_DIR, 'reminders.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 const PUBLIC_DIR = path.join(ROOT, 'public');
@@ -456,8 +459,28 @@ async function checkAndNotify() {
   }
 }
 
-app.listen(PORT, () => {
-  console.log(`提醒网站已启动: http://localhost:${PORT}`);
-  setTimeout(checkAndNotify, 8000);
-  setInterval(checkAndNotify, CHECK_INTERVAL_MS);
-});
+function start(port, host) {
+  const server = app.listen(port, host, () => {
+    const addr = server.address();
+    const shown = addr && addr.address ? `${addr.address}:${addr.port} (${addr.family})` : `http://localhost:${port}`;
+    console.log(`提醒网站已启动: http://localhost:${port}`);
+    console.log(`监听地址: ${shown}`);
+    setTimeout(checkAndNotify, 8000);
+    setInterval(checkAndNotify, CHECK_INTERVAL_MS);
+  });
+
+  server.on('error', (err) => {
+    if (host !== '0.0.0.0' && (err.code === 'EAFNOSUPPORT' || err.code === 'EADDRNOTAVAIL' || err.code === 'EINVAL')) {
+      console.warn(`[listen] ${host} 不可用（${err.code}），回退到 0.0.0.0（仅 IPv4）`);
+      start(port, '0.0.0.0');
+      return;
+    }
+    if (err.code === 'EADDRINUSE') {
+      console.error(`[listen] 端口 ${port} 已被占用，请修改端口后重试`);
+    }
+    console.error(err);
+    process.exit(1);
+  });
+}
+
+start(PORT, HOST);

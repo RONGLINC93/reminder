@@ -26,7 +26,10 @@
 - **统计与侧栏**：今日提醒 / 本月安排 / 7 天内统计，「即将到来」列表
 - **Windows 脚本**：`运行.bat`（启动并打开浏览器）、`停止.bat`（释放 9530 端口）
 - **GitHub 同步**：`推送.bat` / `拉取.bat` + `push.js` / `pull.js`，读取 `.env` 自动完成初始化、提交与同步
-- **文档**：`README.md`（功能、运行、接口、同步说明），页面底部版权信息
+- **文档**：`README.md`（功能、运行、接口、打包、同步说明），页面底部版权信息
+- **打包脚本**：`打包fpk.bat` / `fnos/build-fpk.sh`（飞牛 fnOS 安装包，输出到 `fpk/`），`打包win-zip.bat` / `打包linux-zip.sh` / `打包macos-zip.sh`（三平台离线 zip，输出到 `dist/`，各自附带 `运行.bat` / `启动.sh` / `启动.command`）
+- **网络**：服务监听 `::` 双栈，同时支持 IPv4 与 IPv6 访问，宿主不支持 IPv6 时自动回退 `0.0.0.0`
+- **数据目录**：可通过环境变量 `REMINDER_DATA_DIR` 指定，fnOS 包默认指向共享文件夹 `reminder/data`
 
 ### 变更
 

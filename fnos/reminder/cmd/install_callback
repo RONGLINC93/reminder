@@ -1,0 +1,16 @@
+#!/bin/bash
+# 安装后：初始化数据目录（已存在则保留）
+
+if [ ! -d "${TRIM_APPDEST}/server" ]; then
+    if [ -n "${TRIM_TEMP_LOGFILE}" ]; then
+        echo "提醒：应用文件不完整，未找到 server 目录。" > "${TRIM_TEMP_LOGFILE}"
+    fi
+    exit 1
+fi
+
+DATA_DIR="${TRIM_DATA_SHARE_PATHS%%:*}"
+if [ -n "${DATA_DIR}" ]; then
+    mkdir -p "${DATA_DIR}/data"
+fi
+
+exit 0

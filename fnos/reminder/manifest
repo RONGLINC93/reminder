@@ -1,0 +1,17 @@
+appname               = reminder
+version               = 1.0.0
+display_name          = 提醒
+desc                  = 事件 / 生日 / 办事 / 纪念日提醒网站，支持农历、重复规则、提前提醒，并可推送到企业微信、QQ、微信与自定义接口。
+platform              = all
+source                = thirdparty
+maintainer            = RONGLINC93
+maintainer_url        = https://github.com/RONGLINC93/reminder
+distributor           = RONGLINC93
+distributor_url       = https://github.com/RONGLINC93/reminder
+os_min_version        = 1.1.8
+desktop_uidir         = ui
+desktop_applaunchname = reminder.Reminder
+install_dep_apps      = nodejs_v20
+service_port          = 9530
+ctl_stop              = true
+changelog             = 首个版本：日历与列表视图、农历提醒、重复规则、提前提醒与多通道通知推送。

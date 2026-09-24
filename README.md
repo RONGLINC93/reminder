@@ -130,6 +130,23 @@ Windows 用户直接双击 `运行.bat` 即可（自动释放占用的 9530 端�
 
 所有数据以 JSON 文件保存在 `data/` 目录，无数据库依赖，建议定期备份该目录。
 
+## 打包发布
+
+| 脚本 | 平台 | 产物 |
+| ---- | ---- | ---- |
+| `打包fpk.bat` | Windows（需 `fnos\fnpack.exe`） | `fpk/reminder-<版本>.fpk`（飞牛 fnOS 安装包） |
+| `fnos/build-fpk.sh` | Linux / macOS / WSL | 同上 |
+| `打包win-zip.bat` | Windows | `dist/reminder-<版本>-win.zip`（含 `运行.bat`） |
+| `打包linux-zip.sh` | Linux | `dist/reminder-<版本>-linux.zip`（含 `启动.sh`） |
+| `打包macos-zip.sh` | macOS | `dist/reminder-<版本>-macos.zip`（含 `启动.command`，Finder 双击即可） |
+
+说明：
+
+- 依赖已随仓库提交，`node_modules` 会一并打进包内；若本地缺失，脚本会自动 `npm install --omit=dev`
+- 服务默认监听 `::`（IPv6 双栈），**同时支持 IPv4 与 IPv6 访问**；宿主不支持 IPv6 时自动回退 `0.0.0.0`
+- fnOS 上提醒数据保存在共享文件夹 `reminder/data`，升级 / 卸载不会丢失
+- fpk 安装：飞牛应用中心上传，或 SSH 执行 `appcenter-cli install-fpk reminder-<版本>.fpk`
+
 ## GitHub 同步（推送 / 拉取）
 
 1. 在项目根目录创建 `.env`（已 gitignore，不会入库）：
