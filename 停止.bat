@@ -8,5 +8,5 @@ for /f "tokens=5" %%a in ('netstat -ano ^| findstr /r ":%PORT% "') do (
   )
 )
 echo 完成。
-echo   (5 秒后自动关闭窗口)
-timeout /t 5 /nobreak >nul
+echo   窗口将在以下秒数后自动关闭:
+for /l %%n in (5,-1,1) do (echo   %%n & timeout /t 1 /nobreak >nul)

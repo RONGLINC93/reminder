@@ -44,12 +44,20 @@ if exist dist\*macos.zip (echo   macos: & dir dist\*macos.zip /b) else echo   ma
 
 echo.
 echo 完成。
-if not defined PACKAGE_ALL (echo   (5 秒后自动关闭窗口) & timeout /t 5 /nobreak >nul)
+if not defined PACKAGE_ALL (
+  echo.
+  echo   窗口将在以下秒数后自动关闭:
+  for /l %%n in (5,-1,1) do (echo   %%n & timeout /t 1 /nobreak >nul)
+)
 exit /b 0
 
 :fail
 set "PACKAGE_ALL="
 echo.
 echo [ERROR] 打包失败, 见上方输出。
-if not defined PACKAGE_ALL (echo   (5 秒后自动关闭窗口) & timeout /t 5 /nobreak >nul)
+if not defined PACKAGE_ALL (
+  echo.
+  echo   窗口将在以下秒数后自动关闭:
+  for /l %%n in (5,-1,1) do (echo   %%n & timeout /t 1 /nobreak >nul)
+)
 exit /b 1

@@ -73,11 +73,19 @@ echo.
 rmdir /s /q "%STG%"
 
 if not defined PACKAGE_ALL start "" explorer.exe /select,"%OUT%"
-if not defined PACKAGE_ALL (echo   (5 秒后自动关闭窗口) & timeout /t 5 /nobreak >nul)
+if not defined PACKAGE_ALL (
+  echo.
+  echo   窗口将在以下秒数后自动关闭:
+  for /l %%n in (5,-1,1) do (echo   %%n & timeout /t 1 /nobreak >nul)
+)
 exit /b 0
 
 :fail
 echo.
 echo Build FAILED. See the output above.
-if not defined PACKAGE_ALL (echo   (5 秒后自动关闭窗口) & timeout /t 5 /nobreak >nul)
+if not defined PACKAGE_ALL (
+  echo.
+  echo   窗口将在以下秒数后自动关闭:
+  for /l %%n in (5,-1,1) do (echo   %%n & timeout /t 1 /nobreak >nul)
+)
 exit /b 1
