@@ -1,5 +1,5 @@
 appname               = reminder
-version               = 1.0.3
+version               = 1.0.4
 display_name          = 提醒
 desc                  = 事件 / 生日 / 办事 / 纪念日提醒网站，支持农历、重复规则、提前提醒，并可推送到企业微信、QQ、微信与自定义接口。
 platform              = all
