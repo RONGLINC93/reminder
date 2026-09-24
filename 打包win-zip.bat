@@ -60,10 +60,8 @@ if exist "%PROJ%node_modules" (
 
 echo [3/3] Create zip archive...
 if exist "%OUT%" del /f /q "%OUT%"
-tar -a -c -f "%OUT%" -C "%STG%" . >nul 2>&1
-if errorlevel 1 (
-  powershell -NoProfile -Command "Compress-Archive -Path '%STG%\*' -DestinationPath '%OUT%' -Force"
-)
+rem  NOTE: 用 make-zip.ps1 打包 (UTF-8 文件名 + 正斜杠), 避免中文乱码与跨平台解压异常
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0fnos\make-zip.ps1" -Source "%STG%" -Destination "%OUT%"
 if errorlevel 1 goto fail
 if not exist "%OUT%" goto fail
 

@@ -61,13 +61,14 @@ if errorlevel 1 goto fail
 
 echo [4/4] 生成压缩包 ...
 if exist "%OUT%" del /f /q "%OUT%"
-powershell -NoProfile -Command "Compress-Archive -Path '%STG%\*' -DestinationPath '%OUT%' -Force"
+rem  NOTE: 用 make-zip.ps1 打包 (UTF-8 文件名 + 正斜杠), 避免中文乱码与跨平台解压异常
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0fnos\make-zip.ps1" -Source "%STG%" -Destination "%OUT%"
 if errorlevel 1 goto fail
 if not exist "%OUT%" goto fail
 
 echo.
 echo === Done: %OUT% ===
-echo 用法: 解压后 chmod +x 启动.sh && ./启动.sh（已含依赖，离线直接运行），访问 http://localhost:9530
+echo 用法: 解压后 chmod +x 启动.sh ^&^& ./启动.sh（已含依赖，离线直接运行），访问 http://localhost:9530
 echo.
 
 rmdir /s /q "%STG%"
