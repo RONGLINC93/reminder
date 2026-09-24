@@ -40,6 +40,8 @@ const state = {
   formColor: 'indigo',
   settings: readLocalSettings(),
   tmpWeekStart: readLocalSettings().weekStart,
+  token: localStorage.getItem('reminder.token') || '',
+  user: localStorage.getItem('reminder.user') || '',
 };
 
 /* ------------------------------ 本地设置缓存 ------------------------------ */
@@ -396,12 +398,21 @@ function escapeHtml(str) {
 /* ------------------------------ 接口请求 ------------------------------ */
 
 async function api(url, options = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
   const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     ...options,
   });
   const text = await res.text();
   const data = text ? JSON.parse(text) : {};
+  if (res.status === 401 && data.code === 'UNAUTHENTICATED') {
+    clearAuth();
+    showLogin();
+    const err = new Error(data.error || '登录已过期');
+    err.auth = true;
+    throw err;
+  }
   if (!res.ok) throw new Error(data.error || `请求失败（${res.status}）`);
   return data;
 }
@@ -749,36 +760,17 @@ function setHidden(id, hidden) {
   if (el) el.classList.toggle('hidden', hidden);
 }
 
-/** 顶部「日历 / 通知」主切换的选中态 */
-function syncMainSwitch() {
-  const sw = document.getElementById('main-switch');
-  if (!sw) return;
-  const isNotify = state.view === 'notify';
-  sw.querySelectorAll('[data-main]').forEach((b) => {
-    b.classList.toggle('active', (b.dataset.main === 'notify') === isNotify);
-  });
-}
-
 function switchView(view) {
-  if (view !== 'notify') state.lastView = view;
   state.view = view;
   const sw = document.getElementById('view-switch');
   if (sw) sw.querySelectorAll('.switch-item').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
-  syncMainSwitch();
   renderAll();
 }
 
 function renderAll() {
   renderStats();
-  const isNotify = state.view === 'notify';
   setHidden('month-view', state.view !== 'month');
   setHidden('list-view', state.view !== 'list');
-  setHidden('notify-view', !isNotify);
-  setHidden('filters', isNotify);
-  setHidden('calendar-head', isNotify);
-  setHidden('side-panel', isNotify);
-  const layout = document.getElementById('layout');
-  if (layout) layout.classList.toggle('single', isNotify);
 
   if (state.view === 'month') {
     renderFilters();
@@ -786,14 +778,10 @@ function renderAll() {
   } else if (state.view === 'list') {
     renderFilters();
     renderList();
-  } else {
-    renderNotifyView();
   }
 
-  if (!isNotify) {
-    renderSide();
-    renderUpcoming();
-  }
+  renderSide();
+  renderUpcoming();
 }
 
 /* ------------------------------ 弹窗表单 ------------------------------ */
@@ -985,11 +973,107 @@ async function load() {
   try {
     state.items = await api('/api/reminders');
   } catch (err) {
+    if (err.auth) return; // 已跳转登录界面，不再提示
     toast(`加载失败：${err.message}`);
     state.items = [];
   }
   await loadSettings();
   renderAll();
+}
+
+/* ------------------------------ 登录 / 鉴权 ------------------------------ */
+
+function showLogin() {
+  document.getElementById('login-user').value = state.user || '';
+  document.getElementById('login-error').classList.add('hidden');
+  document.getElementById('login-mask').classList.remove('hidden');
+  setTimeout(() => document.getElementById('login-pass').focus(), 50);
+}
+
+function hideLogin() {
+  document.getElementById('login-mask').classList.add('hidden');
+}
+
+function clearAuth() {
+  state.token = '';
+  state.user = '';
+  localStorage.removeItem('reminder.token');
+  localStorage.removeItem('reminder.user');
+}
+
+function setUserName(name) {
+  const el = document.getElementById('user-name');
+  if (el) el.textContent = name ? `👤 ${name}` : '';
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+async function doLogin(e) {
+  e.preventDefault();
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user, pass }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || '登录失败');
+    state.token = data.token;
+    state.user = data.user;
+    localStorage.setItem('reminder.token', data.token);
+    localStorage.setItem('reminder.user', data.user);
+    document.getElementById('login-pass').value = '';
+    hideLogin();
+    setUserName(data.user);
+    await load();
+  } catch (err) {
+    showLoginError(err.message);
+  }
+}
+
+function logout() {
+  if (!confirm('确定退出登录吗？')) return;
+  fetch('/api/logout', {
+    method: 'POST',
+    headers: state.token ? { Authorization: `Bearer ${state.token}` } : {},
+  }).catch(() => {});
+  clearAuth();
+  setUserName('');
+  showLogin();
+}
+
+function showPassError(msg) {
+  const el = document.getElementById('pass-error');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+async function changePassword() {
+  const oldPass = document.getElementById('s-old-pass').value;
+  const newPass = document.getElementById('s-new-pass').value;
+  const newPass2 = document.getElementById('s-new-pass2').value;
+  document.getElementById('pass-error').classList.add('hidden');
+  if (!newPass) return showPassError('请输入新密码');
+  if (newPass !== newPass2) return showPassError('两次输入的新密码不一致');
+  try {
+    const r = await fetch('/api/auth/change', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${state.token}` },
+      body: JSON.stringify({ oldPass, newPass }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || '修改失败');
+    alert('密码已修改，请重新登录');
+    logout();
+  } catch (err) {
+    showPassError(err.message);
+  }
 }
 
 /* ------------------------------ 设置弹窗 ------------------------------ */
@@ -1156,16 +1240,32 @@ function applySettings(saved) {
   saveLocalSettings(state.settings);
 }
 
-function openSettings() {
+function openSettings(panel) {
   state.tmpWeekStart = state.settings.weekStart;
   setChecked('s-showlunar', state.settings.showLunar);
   setChecked('s-showholiday', state.settings.showHoliday);
   renderWeekStartPicker();
-  document.getElementById('settings-mask').classList.remove('hidden');
+  setVal('s-old-pass', '');
+  setVal('s-new-pass', '');
+  setVal('s-new-pass2', '');
+  document.getElementById('pass-error').classList.add('hidden');
+  document.getElementById('settings-screen').classList.remove('hidden');
+  switchSettingsPanel(panel || 'general');
 }
 
 function closeSettings() {
-  document.getElementById('settings-mask').classList.add('hidden');
+  document.getElementById('settings-screen').classList.add('hidden');
+}
+
+/** 设置界面左侧功能切换：高亮导航项并显示对应面板 */
+function switchSettingsPanel(panel) {
+  document.querySelectorAll('.settings-nav-item').forEach((b) => {
+    b.classList.toggle('active', b.dataset.panel === panel);
+  });
+  document.querySelectorAll('#settings-screen .settings-panel').forEach((p) => {
+    p.classList.toggle('hidden', p.dataset.panel !== panel);
+  });
+  if (panel === 'notify') renderNotifyView();
 }
 
 async function saveSettings() {
@@ -1212,24 +1312,15 @@ function bindEvents() {
     renderAll();
   });
   document.getElementById('btn-new').addEventListener('click', () => openModal(null, state.selected));
-  document.getElementById('btn-settings').addEventListener('click', openSettings);
-  document.getElementById('main-switch').querySelectorAll('[data-main]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      switchView(btn.dataset.main === 'notify' ? 'notify' : (state.lastView || 'month'));
-    });
-  });
+  document.getElementById('btn-settings').addEventListener('click', () => openSettings('general'));
   document.getElementById('settings-close').addEventListener('click', closeSettings);
   document.getElementById('settings-cancel').addEventListener('click', closeSettings);
   document.getElementById('settings-save').addEventListener('click', saveSettings);
-  document.getElementById('btn-goto-notify').addEventListener('click', () => {
-    closeSettings();
-    switchView('notify');
+  document.querySelectorAll('.settings-nav-item').forEach((btn) => {
+    btn.addEventListener('click', () => switchSettingsPanel(btn.dataset.panel));
   });
   document.getElementById('notify-save').addEventListener('click', saveNotifySettings);
   document.getElementById('notify-test').addEventListener('click', testNotify);
-  document.getElementById('settings-mask').addEventListener('click', (e) => {
-    if (e.target.id === 'settings-mask') closeSettings();
-  });
   document.getElementById('btn-new-day').addEventListener('click', () => openModal(null, state.selected));
   document.getElementById('modal-close').addEventListener('click', closeModal);
   document.getElementById('btn-cancel').addEventListener('click', closeModal);
@@ -1257,6 +1348,9 @@ function bindEvents() {
   document.getElementById('view-switch').querySelectorAll('[data-view]').forEach((btn) => {
     btn.addEventListener('click', () => switchView(btn.dataset.view));
   });
+  document.getElementById('login-form').addEventListener('submit', doLogin);
+  document.getElementById('btn-logout').addEventListener('click', logout);
+  document.getElementById('btn-change-pass').addEventListener('click', changePassword);
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     closeModal();
@@ -1270,4 +1364,11 @@ renderColorPicker();
 renderLunarPicker();
 renderWeekStartPicker();
 renderWeekdays();
-load();
+
+// 启动：已有会话则尝试验证并加载，否则显示登录界面
+if (state.token) {
+  setUserName(state.user);
+  load(); // 若会话失效会触发 401 并自动跳转登录
+} else {
+  showLogin();
+}

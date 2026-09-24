@@ -4,6 +4,7 @@ const express = require('express');
 const notifier = require('./lib/notifier');
 const { keyOf } = require('./lib/dates');
 const { lunarInfoOf, nextLunarDate } = require('./lib/lunar');
+const { createAuth } = require('./lib/auth');
 
 const PORT = process.env.PORT || 9530;
 const CHECK_INTERVAL_MS = 60 * 1000;
@@ -15,6 +16,8 @@ const HOST = process.env.HOST || '::';
 const DATA_FILE = path.join(DATA_DIR, 'reminders.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 const PUBLIC_DIR = path.join(ROOT, 'public');
+// 账号鉴权：账号密码存于 data/auth.json（默认 admin/admin，可用环境变量覆盖）
+const auth = createAuth(DATA_DIR);
 
 const WEEK_STARTS = ['monday', 'sunday'];
 
@@ -41,6 +44,62 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.static(PUBLIC_DIR, {
   setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache'),
 }));
+
+/* ------------------------------ 登录鉴权 ------------------------------ */
+
+/** 除登录、健康检查、对外 Webhook 外，所有 /api 接口都需要有效会话 */
+function requireAuth(req, res, next) {
+  const header = req.get('Authorization') || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+  if (auth.validToken(token)) {
+    req.user = auth.currentUser(token);
+    return next();
+  }
+  res.status(401).json({ error: '未登录或登录已过期', code: 'UNAUTHENTICATED' });
+}
+
+app.use((req, res, next) => {
+  if (req.path === '/api/login' || req.path === '/api/health') return next();
+  // 对外通知接口自带 Token 校验，不受登录限制
+  if (req.path.startsWith('/api/webhook/')) return next();
+  if (req.path.startsWith('/api/')) return requireAuth(req, res, next);
+  next();
+});
+
+app.post('/api/login', (req, res, next) => {
+  try {
+    const { user, pass } = req.body || {};
+    if (!auth.verify(user, pass)) throw new HttpError(401, '用户名或密码错误');
+    const token = auth.issueToken(user);
+    res.json({ token, user, expiresIn: auth.SESSION_TTL_MS });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/api/logout', (req, res) => {
+  const header = req.get('Authorization') || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+  auth.revoke(token);
+  res.json({ ok: true });
+});
+
+app.get('/api/auth/me', (req, res) => res.json({ user: req.user }));
+
+/** 修改密码：校验当前密码后写入，并使所有会话失效（强制重新登录） */
+app.post('/api/auth/change', (req, res, next) => {
+  try {
+    const { oldPass, newPass } = req.body || {};
+    if (!auth.verify(req.user, oldPass)) throw new HttpError(400, '当前密码不正确');
+    if (!newPass) throw new HttpError(400, '新密码不能为空');
+    if (String(newPass).length > 200) throw new HttpError(400, '新密码过长');
+    auth.updateCredentials(req.user, newPass);
+    auth.revokeAll();
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
 
 /* ------------------------------ 数据存取 ------------------------------ */
 

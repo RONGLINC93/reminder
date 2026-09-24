@@ -9,6 +9,30 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div class="login-mask hidden" id="login-mask">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="brand-mark">R</div>
+        <div>
+          <h1>提醒</h1>
+          <p>登录后继续</p>
+        </div>
+      </div>
+      <form id="login-form" class="login-form">
+        <label class="field">
+          <span>用户名</span>
+          <input type="text" id="login-user" autocomplete="username" placeholder="请输入用户名" required />
+        </label>
+        <label class="field">
+          <span>密码</span>
+          <input type="password" id="login-pass" autocomplete="current-password" placeholder="请输入密码" required />
+        </label>
+        <p class="form-error hidden" id="login-error"></p>
+        <button type="submit" class="btn primary login-btn">登 录</button>
+      </form>
+    </div>
+  </div>
+
   <header class="topbar">
     <div class="brand">
       <div class="brand-mark">R</div>
@@ -18,15 +42,17 @@
       </div>
     </div>
     <div class="topbar-actions">
-      <div class="stats" id="stats"></div>
-      <div class="switch" id="main-switch">
-        <button class="switch-item active" data-main="calendar">🗓 日历</button>
-        <button class="switch-item" data-main="notify">🔔 通知</button>
-      </div>
-      <button class="icon-btn" id="btn-settings" title="设置">⚙</button>
-      <button class="btn primary" id="btn-new">
+            <button class="btn primary" id="btn-new">
         <span class="plus">+</span> 新建提醒
       </button>
+      <div class="stats" id="stats"></div>
+            <button class="icon-btn" id="btn-settings" title="设置">⚙</button>
+      <div class="user-area" id="user-area">
+        <span class="user-tag" id="user-name"></span>
+        <button class="ghost-btn" id="btn-logout" title="退出登录">退出</button>
+      </div>
+
+
     </div>
   </header>
 
@@ -58,8 +84,162 @@
         <div class="list-summary" id="list-summary"></div>
         <div id="list-container"></div>
       </div>
+    </section>
 
-      <div id="notify-view" class="notify-view hidden">
+    <aside class="panel side-panel" id="side-panel">
+      <div class="side-head">
+        <div>
+          <h3 id="side-title">今天</h3>
+          <p id="side-subtitle" class="muted"></p>
+        </div>
+        <button class="btn soft" id="btn-new-day">+ 加在这天</button>
+      </div>
+      <div id="day-list" class="day-list"></div>
+
+      <div class="upcoming">
+        <h3>即将到来</h3>
+        <div id="upcoming-list"></div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="modal-mask hidden" id="modal-mask">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <h3 id="modal-title">新建提醒</h3>
+        <button class="icon-btn" id="modal-close" title="关闭">×</button>
+      </div>
+      <form id="reminder-form" class="form">
+        <input type="hidden" id="f-id" />
+
+        <label class="field">
+          <span>标题 <b class="req">*</b></span>
+          <input type="text" id="f-title" maxlength="60" placeholder="例如：妈妈生日 / 交房租 / 项目评审" required />
+        </label>
+
+        <div class="field">
+          <span>类型</span>
+          <div class="type-picker" id="f-type"></div>
+        </div>
+
+        <div class="row">
+          <label class="field" id="f-date-field">
+            <span>日期 <b class="req">*</b></span>
+            <input type="date" id="f-date" required />
+          </label>
+          <label class="field">
+            <span>时间</span>
+            <input type="time" id="f-time" />
+          </label>
+        </div>
+
+        <div class="field lunar-field">
+          <label class="check"><input type="checkbox" id="f-lunar" /> 按农历（阴历）日期，每年自动换算</label>
+          <div class="lunar-picker hidden" id="f-lunar-picker">
+            <select id="f-lunar-year" title="基准年份"></select>
+            <select id="f-lunar-month" title="农历月"></select>
+            <select id="f-lunar-day" title="农历日"></select>
+          </div>
+          <p class="form-tip" id="f-lunar-hint"></p>
+        </div>
+
+        <div class="row">
+          <label class="field">
+            <span>重复</span>
+            <select id="f-repeat">
+              <option value="none">不重复</option>
+              <option value="daily">每天</option>
+              <option value="weekly">每周</option>
+              <option value="monthly">每月</option>
+              <option value="yearly">每年</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>提前提醒</span>
+            <select id="f-lead">
+              <option value="0">当天</option>
+              <option value="1">提前 1 天</option>
+              <option value="3">提前 3 天</option>
+              <option value="7">提前 7 天</option>
+              <option value="15">提前 15 天</option>
+              <option value="30">提前 30 天</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="field">
+          <span>颜色</span>
+          <div class="color-picker" id="f-color"></div>
+        </div>
+
+        <label class="field">
+          <span>备注</span>
+          <textarea id="f-note" rows="3" maxlength="500" placeholder="补充说明（可选）"></textarea>
+        </label>
+
+        <p class="form-error hidden" id="form-error"></p>
+
+        <div class="modal-foot">
+          <button type="button" class="btn danger-text hidden" id="btn-delete">删除</button>
+          <div class="spacer"></div>
+          <button type="button" class="ghost-btn" id="btn-cancel">取消</button>
+          <button type="submit" class="btn primary" id="btn-save">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 全屏设置界面：左侧功能导航，右侧具体内容 -->
+  <div class="settings-screen hidden" id="settings-screen">
+    <aside class="settings-side">
+      <div class="settings-side-top">
+        <div class="brand-mark">R</div>
+        <div>
+          <div class="settings-title">设置</div>
+          <div class="settings-sub">提醒网站</div>
+        </div>
+      </div>
+      <nav class="settings-nav">
+        <button class="settings-nav-item active" data-panel="general">
+          <span class="nav-ico">⚙</span> 通用
+        </button>
+        <button class="settings-nav-item" data-panel="notify">
+          <span class="nav-ico">🔔</span> 通知
+        </button>
+        <button class="settings-nav-item" data-panel="security">
+          <span class="nav-ico">🔒</span> 账号安全
+        </button>
+      </nav>
+      <button class="settings-close-btn" id="settings-close">✕ 关闭</button>
+    </aside>
+
+    <main class="settings-main">
+      <!-- 通用 -->
+      <section class="settings-panel" data-panel="general">
+        <h2 class="settings-h2">通用</h2>
+        <div class="form">
+          <div class="field">
+            <span>每周第一天</span>
+            <div class="type-picker" id="s-weekstart"></div>
+          </div>
+
+          <div class="field">
+            <span>日期显示</span>
+            <label class="check"><input type="checkbox" id="s-showlunar" /> 日历显示农历与节日</label>
+            <label class="check"><input type="checkbox" id="s-showholiday" /> 日历显示国家法定假日与调休</label>
+          </div>
+
+          <div class="modal-foot">
+            <div class="spacer"></div>
+            <button type="button" class="ghost-btn" id="settings-cancel">取消</button>
+            <button type="button" class="btn primary" id="settings-save">保存</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 通知 -->
+      <section class="settings-panel hidden" data-panel="notify">
+        <h2 class="settings-h2">通知</h2>
         <div class="notify-head">
           <div>
             <h3>通知机器人</h3>
@@ -170,141 +350,31 @@ Content-Type: application/json
 
         <div class="sec-title">最近推送记录</div>
         <div class="logs" id="notify-logs"></div>
-      </div>
-    </section>
+      </section>
 
-    <aside class="panel side-panel" id="side-panel">
-      <div class="side-head">
-        <div>
-          <h3 id="side-title">今天</h3>
-          <p id="side-subtitle" class="muted"></p>
-        </div>
-        <button class="btn soft" id="btn-new-day">+ 加在这天</button>
-      </div>
-      <div id="day-list" class="day-list"></div>
-
-      <div class="upcoming">
-        <h3>即将到来</h3>
-        <div id="upcoming-list"></div>
-      </div>
-    </aside>
-  </main>
-
-  <div class="modal-mask hidden" id="modal-mask">
-    <div class="modal" role="dialog" aria-modal="true">
-      <div class="modal-head">
-        <h3 id="modal-title">新建提醒</h3>
-        <button class="icon-btn" id="modal-close" title="关闭">×</button>
-      </div>
-      <form id="reminder-form" class="form">
-        <input type="hidden" id="f-id" />
-
-        <label class="field">
-          <span>标题 <b class="req">*</b></span>
-          <input type="text" id="f-title" maxlength="60" placeholder="例如：妈妈生日 / 交房租 / 项目评审" required />
-        </label>
-
-        <div class="field">
-          <span>类型</span>
-          <div class="type-picker" id="f-type"></div>
-        </div>
-
-        <div class="row">
-          <label class="field" id="f-date-field">
-            <span>日期 <b class="req">*</b></span>
-            <input type="date" id="f-date" required />
-          </label>
+      <!-- 账号安全 -->
+      <section class="settings-panel hidden" data-panel="security">
+        <h2 class="settings-h2">账号安全</h2>
+        <div class="form">
           <label class="field">
-            <span>时间</span>
-            <input type="time" id="f-time" />
+            <span>当前密码</span>
+            <input type="password" id="s-old-pass" autocomplete="current-password" placeholder="请输入当前密码" />
           </label>
-        </div>
-
-        <div class="field lunar-field">
-          <label class="check"><input type="checkbox" id="f-lunar" /> 按农历（阴历）日期，每年自动换算</label>
-          <div class="lunar-picker hidden" id="f-lunar-picker">
-            <select id="f-lunar-year" title="基准年份"></select>
-            <select id="f-lunar-month" title="农历月"></select>
-            <select id="f-lunar-day" title="农历日"></select>
+          <div class="row">
+            <label class="field">
+              <span>新密码</span>
+              <input type="password" id="s-new-pass" autocomplete="new-password" placeholder="请输入新密码" />
+            </label>
+            <label class="field">
+              <span>确认新密码</span>
+              <input type="password" id="s-new-pass2" autocomplete="new-password" placeholder="再次输入新密码" />
+            </label>
           </div>
-          <p class="form-tip" id="f-lunar-hint"></p>
+          <p class="form-error hidden" id="pass-error"></p>
+          <button type="button" class="ghost-btn" id="btn-change-pass">修改密码</button>
         </div>
-
-        <div class="row">
-          <label class="field">
-            <span>重复</span>
-            <select id="f-repeat">
-              <option value="none">不重复</option>
-              <option value="daily">每天</option>
-              <option value="weekly">每周</option>
-              <option value="monthly">每月</option>
-              <option value="yearly">每年</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>提前提醒</span>
-            <select id="f-lead">
-              <option value="0">当天</option>
-              <option value="1">提前 1 天</option>
-              <option value="3">提前 3 天</option>
-              <option value="7">提前 7 天</option>
-              <option value="15">提前 15 天</option>
-              <option value="30">提前 30 天</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="field">
-          <span>颜色</span>
-          <div class="color-picker" id="f-color"></div>
-        </div>
-
-        <label class="field">
-          <span>备注</span>
-          <textarea id="f-note" rows="3" maxlength="500" placeholder="补充说明（可选）"></textarea>
-        </label>
-
-        <p class="form-error hidden" id="form-error"></p>
-
-        <div class="modal-foot">
-          <button type="button" class="btn danger-text hidden" id="btn-delete">删除</button>
-          <div class="spacer"></div>
-          <button type="button" class="ghost-btn" id="btn-cancel">取消</button>
-          <button type="submit" class="btn primary" id="btn-save">保存</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="modal-mask hidden" id="settings-mask">
-    <div class="modal" role="dialog" aria-modal="true">
-      <div class="modal-head">
-        <h3>设置</h3>
-        <button class="icon-btn" id="settings-close" title="关闭">×</button>
-      </div>
-      <div class="form">
-        <div class="field">
-          <span>每周第一天</span>
-          <div class="type-picker" id="s-weekstart"></div>
-        </div>
-
-        <div class="field">
-          <span>日期显示</span>
-          <label class="check"><input type="checkbox" id="s-showlunar" /> 日历显示农历与节日</label>
-          <label class="check"><input type="checkbox" id="s-showholiday" /> 日历显示国家法定假日与调休</label>
-        </div>
-
-        <div class="sec-title">通知机器人</div>
-        <p class="form-tip">企业微信 / QQ / 微信 / 自定义接口的配置，已移到「机器人」页面。</p>
-        <button type="button" class="ghost-btn" id="btn-goto-notify">前往机器人设置 →</button>
-
-        <div class="modal-foot">
-          <div class="spacer"></div>
-          <button type="button" class="ghost-btn" id="settings-cancel">取消</button>
-          <button type="button" class="btn primary" id="settings-save">保存</button>
-        </div>
-      </div>
-    </div>
+      </section>
+    </main>
   </div>
 
   <footer class="site-foot">
