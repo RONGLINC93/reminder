@@ -62,4 +62,49 @@ try {
   } finally { $zip.Dispose() }
 } finally { $fs.Dispose() }
 
+# .NET Framework's ZipArchive writes UTF-8 names but never sets the per-entry
+# UTF-8 language-encoding flag (general purpose bit 11). Readers that honour the
+# spec (Python zipfile, some unzip builds, Windows Explorer) then decode
+# non-ASCII names as CP437 and show mojibake. Patch the flag into every local
+# file header and central directory record, driven by a proper central-directory
+# walk (so no false match inside file data).
+function Set-ZipUtf8Flag([string]$path) {
+  $bytes = [System.IO.File]::ReadAllBytes($path)
+
+  # End Of Central Directory record: signature PK\x05\x06, scan from the end
+  $eocd = -1
+  for ($i = $bytes.Length - 22; $i -ge 0; $i--) {
+    if ($bytes[$i] -eq 0x50 -and $bytes[$i + 1] -eq 0x4b -and $bytes[$i + 2] -eq 0x05 -and $bytes[$i + 3] -eq 0x06) { $eocd = $i; break }
+  }
+  if ($eocd -lt 0) { throw "zip: end-of-central-directory record not found" }
+
+  $recordCount = [BitConverter]::ToUInt16($bytes, $eocd + 10)
+  $offset = [int][BitConverter]::ToUInt32($bytes, $eocd + 16)
+
+  for ($n = 0; $n -lt $recordCount; $n++) {
+    if (-not ($bytes[$offset] -eq 0x50 -and $bytes[$offset + 1] -eq 0x4b -and $bytes[$offset + 2] -eq 0x01 -and $bytes[$offset + 3] -eq 0x02)) {
+      throw ("zip: bad central directory record at offset " + $offset)
+    }
+
+    # central directory: flags at +8, local header offset at +42
+    $flags = [BitConverter]::ToUInt16($bytes, $offset + 8) -bor 0x0800
+    $bytes[$offset + 8] = [byte]($flags -band 0xff)
+    $bytes[$offset + 9] = [byte](($flags -shr 8) -band 0xff)
+
+    # local file header: flags at +6
+    $local = [int][BitConverter]::ToUInt32($bytes, $offset + 42)
+    $localFlags = [BitConverter]::ToUInt16($bytes, $local + 6) -bor 0x0800
+    $bytes[$local + 6] = [byte]($localFlags -band 0xff)
+    $bytes[$local + 7] = [byte](($localFlags -shr 8) -band 0xff)
+
+    $nameLen = [BitConverter]::ToUInt16($bytes, $offset + 28)
+    $extraLen = [BitConverter]::ToUInt16($bytes, $offset + 30)
+    $commentLen = [BitConverter]::ToUInt16($bytes, $offset + 32)
+    $offset += 46 + $nameLen + $extraLen + $commentLen
+  }
+
+  [System.IO.File]::WriteAllBytes($path, $bytes)
+}
+Set-ZipUtf8Flag $dst
+
 Write-Host ("    zip entries: " + $count + " -> " + $dst)
