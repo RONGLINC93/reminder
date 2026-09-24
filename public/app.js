@@ -1088,6 +1088,7 @@ function renderWeekStartPicker() {
     btn.addEventListener('click', () => {
       state.tmpWeekStart = btn.dataset.weekstart;
       renderWeekStartPicker();
+      autoSaveGeneral();
     });
   });
 }
@@ -1171,14 +1172,44 @@ function collectNotify() {
   };
 }
 
-function collectSettings() {
+/** 收集「通用」面板的当前值 */
+function generalPart() {
   return {
     weekStart: state.tmpWeekStart === 'sunday' ? 'sunday' : 'monday',
-    showLunar: state.settings.showLunar,
-    showHoliday: state.settings.showHoliday,
-    dailyNotifyTime: /^\d{2}:\d{2}$/.test(val('s-daily-time')) ? val('s-daily-time') : '09:00',
-    notify: collectNotify(),
+    showLunar: isChecked('s-showlunar'),
+    showHoliday: isChecked('s-showholiday'),
   };
+}
+
+/** 收集「通知」面板的当前值 */
+function notifyPart() {
+  const dt = /^\d{2}:\d{2}$/.test(val('s-daily-time')) ? val('s-daily-time') : '09:00';
+  return { dailyNotifyTime: dt, notify: collectNotify() };
+}
+
+/**
+ * 增量保存：服务端按字段合并，只更新传入的分组，不会清掉其它分组。
+ * 修改即保存（auto-save），成功后同步本地设置，可选刷新日历。
+ */
+async function autoSave(partial, { render = false, msg } = {}) {
+  try {
+    const saved = await api('/api/settings', { method: 'PUT', body: JSON.stringify(partial) });
+    applySettings(saved);
+    if (render) renderAll();
+    if (msg) toast(msg);
+    return true;
+  } catch (err) {
+    toast(`保存失败：${err.message}`);
+    return false;
+  }
+}
+
+async function autoSaveGeneral() {
+  await autoSave(generalPart(), { render: true, msg: '设置已保存' });
+}
+
+async function autoSaveNotify() {
+  await autoSave(notifyPart(), { msg: '机器人设置已保存' });
 }
 
 async function loadNotifyLogs() {
@@ -1216,8 +1247,7 @@ async function testNotify() {
   if (!box) return;
   box.textContent = '发送中…';
   try {
-    const saved = await api('/api/settings', { method: 'PUT', body: JSON.stringify(collectSettings()) });
-    applySettings(saved);
+    await autoSave(notifyPart(), {});
     const r = await api('/api/notify/test', { method: 'POST', body: JSON.stringify({ channel: 'all' }) });
     box.innerHTML = r.results
       .map((x) => `<span class="${x.ok ? 'ok' : 'bad'}">${x.ok ? '✅' : '❌'} ${escapeHtml(x.label)}${x.ok ? '' : `：${escapeHtml(x.msg)}`}</span>`)
@@ -1268,35 +1298,6 @@ function switchSettingsPanel(panel) {
   if (panel === 'notify') renderNotifyView();
 }
 
-async function saveSettings() {
-  try {
-    const saved = await api('/api/settings', {
-      method: 'PUT',
-      body: JSON.stringify({
-        weekStart: state.tmpWeekStart === 'sunday' ? 'sunday' : 'monday',
-        showLunar: isChecked('s-showlunar'),
-        showHoliday: isChecked('s-showholiday'),
-      }),
-    });
-    applySettings(saved);
-    closeSettings();
-    renderAll();
-    toast('设置已保存');
-  } catch (err) {
-    toast(`保存失败：${err.message}`);
-  }
-}
-
-async function saveNotifySettings() {
-  try {
-    const saved = await api('/api/settings', { method: 'PUT', body: JSON.stringify(collectSettings()) });
-    applySettings(saved);
-    toast('机器人设置已保存');
-  } catch (err) {
-    toast(`保存失败：${err.message}`);
-  }
-}
-
 function bindEvents() {
   document.getElementById('prev-month').addEventListener('click', () => {
     state.cursor = new Date(state.cursor.getFullYear(), state.cursor.getMonth() - 1, 1);
@@ -1314,13 +1315,19 @@ function bindEvents() {
   document.getElementById('btn-new').addEventListener('click', () => openModal(null, state.selected));
   document.getElementById('btn-settings').addEventListener('click', () => openSettings('general'));
   document.getElementById('settings-close').addEventListener('click', closeSettings);
-  document.getElementById('settings-cancel').addEventListener('click', closeSettings);
-  document.getElementById('settings-save').addEventListener('click', saveSettings);
   document.querySelectorAll('.settings-nav-item').forEach((btn) => {
     btn.addEventListener('click', () => switchSettingsPanel(btn.dataset.panel));
   });
-  document.getElementById('notify-save').addEventListener('click', saveNotifySettings);
   document.getElementById('notify-test').addEventListener('click', testNotify);
+  // 设置改为「修改即保存」：勾选项/下拉即时保存，通知面板内任意输入变更即时保存
+  document.getElementById('s-showlunar').addEventListener('change', autoSaveGeneral);
+  document.getElementById('s-showholiday').addEventListener('change', autoSaveGeneral);
+  const notifyPanel = document.querySelector('#settings-screen .settings-panel[data-panel="notify"]');
+  if (notifyPanel) {
+    notifyPanel.addEventListener('change', (e) => {
+      if (e.target.matches('input, select')) autoSaveNotify();
+    });
+  }
   document.getElementById('btn-new-day').addEventListener('click', () => openModal(null, state.selected));
   document.getElementById('modal-close').addEventListener('click', closeModal);
   document.getElementById('btn-cancel').addEventListener('click', closeModal);

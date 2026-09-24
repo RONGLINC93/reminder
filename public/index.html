@@ -39,13 +39,13 @@
       <div class="brand-text">
         <h1>提醒</h1>
         <p>事件 · 生日 · 办事，一个日历全记住</p>
-      </div>
+      </div><div class="stats" id="stats"></div>
     </div>
     <div class="topbar-actions">
             <button class="btn primary" id="btn-new">
         <span class="plus">+</span> 新建提醒
       </button>
-      <div class="stats" id="stats"></div>
+      
             <button class="icon-btn" id="btn-settings" title="设置">⚙</button>
       <div class="user-area" id="user-area">
         <span class="user-tag" id="user-name"></span>
@@ -191,6 +191,8 @@
 
   <!-- 全屏设置界面：左侧功能导航，右侧具体内容 -->
   <div class="settings-screen hidden" id="settings-screen">
+    <div class="settings-window">
+      <button class="settings-close-btn" id="settings-close" title="关闭设置">✕</button>
     <aside class="settings-side">
       <div class="settings-side-top">
         <div class="brand-mark">R</div>
@@ -210,7 +212,6 @@
           <span class="nav-ico">🔒</span> 账号安全
         </button>
       </nav>
-      <button class="settings-close-btn" id="settings-close">✕ 关闭</button>
     </aside>
 
     <main class="settings-main">
@@ -229,11 +230,6 @@
             <label class="check"><input type="checkbox" id="s-showholiday" /> 日历显示国家法定假日与调休</label>
           </div>
 
-          <div class="modal-foot">
-            <div class="spacer"></div>
-            <button type="button" class="ghost-btn" id="settings-cancel">取消</button>
-            <button type="button" class="btn primary" id="settings-save">保存</button>
-          </div>
         </div>
       </section>
 
@@ -246,8 +242,7 @@
             <p class="muted">到点自动推送提醒：每分钟检查一次，同一提醒同一天只推一次。</p>
           </div>
           <div class="notify-actions">
-            <button class="ghost-btn" id="notify-test">发送测试通知</button>
-            <button class="btn primary" id="notify-save">保存设置</button>
+            <button class="btn soft" id="notify-test">发送测试通知</button>
           </div>
         </div>
 
@@ -263,19 +258,25 @@
         </div>
 
         <div class="chan-grid">
-          <div class="chan">
+          <div class="chan chan-wecom">
             <div class="chan-head">
+              <div class="chan-title">
+                <span class="chan-ico">💬</span>
+                <b>企业微信机器人（群机器人）</b>
+              </div>
               <label class="check"><input type="checkbox" id="n-wecomBot-enabled" /> 启用</label>
-              <b>企业微信机器人（群机器人）</b>
             </div>
             <input type="text" id="n-wecomBot-webhook" placeholder="Webhook 地址 https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." />
             <p class="form-tip">群设置 → 群机器人 → 添加机器人，复制 Webhook 地址。</p>
           </div>
 
-          <div class="chan">
+          <div class="chan chan-wecom-app">
             <div class="chan-head">
+              <div class="chan-title">
+                <span class="chan-ico">📣</span>
+                <b>企业微信应用消息</b>
+              </div>
               <label class="check"><input type="checkbox" id="n-wecomApp-enabled" /> 启用</label>
-              <b>企业微信应用消息</b>
             </div>
             <div class="row">
               <input type="text" id="n-wecomApp-corpid" placeholder="CorpID" />
@@ -288,10 +289,13 @@
             <p class="form-tip">需把服务器 IP 填入企业微信应用的可信 IP 列表。</p>
           </div>
 
-          <div class="chan">
+          <div class="chan chan-qq">
             <div class="chan-head">
+              <div class="chan-title">
+                <span class="chan-ico">🐧</span>
+                <b>QQ 机器人（OneBot v11）</b>
+              </div>
               <label class="check"><input type="checkbox" id="n-qq-enabled" /> 启用</label>
-              <b>QQ 机器人（OneBot v11）</b>
             </div>
             <div class="row">
               <input type="text" id="n-qq-baseUrl" placeholder="接口地址 http://127.0.0.1:5700" />
@@ -307,10 +311,13 @@
             <p class="form-tip">适用于 go-cqhttp、NapCat、Lagrange 等 OneBot v11 实现。</p>
           </div>
 
-          <div class="chan">
+          <div class="chan chan-wechat">
             <div class="chan-head">
+              <div class="chan-title">
+                <span class="chan-ico">📲</span>
+                <b>微信推送</b>
+              </div>
               <label class="check"><input type="checkbox" id="n-wechat-enabled" /> 启用</label>
-              <b>微信推送</b>
             </div>
             <select id="n-wechat-provider">
               <option value="serverchan">Server 酱 Turbo</option>
@@ -323,10 +330,13 @@
             <p class="form-tip">按所选服务商填写对应密钥即可，未使用的那一项留空。</p>
           </div>
 
-          <div class="chan chan-wide">
+          <div class="chan chan-webhook chan-wide">
             <div class="chan-head">
+              <div class="chan-title">
+                <span class="chan-ico">🔗</span>
+                <b>通知接口（自定义 Webhook）</b>
+              </div>
               <label class="check"><input type="checkbox" id="n-webhook-enabled" /> 启用</label>
-              <b>通知接口（自定义 Webhook）</b>
             </div>
             <div class="row">
               <input type="text" id="n-webhook-url" placeholder="接收地址 https://your-server/notify" />
@@ -375,6 +385,7 @@ Content-Type: application/json
         </div>
       </section>
     </main>
+    </div>
   </div>
 
   <footer class="site-foot">
