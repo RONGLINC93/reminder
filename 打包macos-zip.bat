@@ -19,7 +19,7 @@ set "OUT=%DIST%\%NAME%.zip"
 set "LAUNCHER=%PROJ%fnos\launcher\启动.command"
 
 echo === Build macOS zip: %NAME%.zip ===
-echo （包内不含 node_modules；解压后首次运行 启动.command 会自动安装依赖）
+echo （包内已含 node_modules，解压后离线即可运行）
 echo.
 
 if not exist "%DIST%" mkdir "%DIST%" 2>nul
