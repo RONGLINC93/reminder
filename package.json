@@ -1,6 +1,6 @@
 {
   "name": "reminder",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": true,
   "description": "提醒网站：事件 / 生日 / 办事等提醒，日历视图与增删改查",
   "main": "server.js",
