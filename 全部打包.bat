@@ -36,8 +36,8 @@ echo.
 
 set "PACKAGE_ALL="
 
-echo ############ 打包产物 ############
-if exist fpk\*.fpk (echo   fpk  : & dir fpk\*.fpk /b) else echo   fpk  : 无
+echo ############ 打包产物 (dist/) ############
+if exist dist\*.fpk (echo   fpk  : & dir dist\*.fpk /b) else echo   fpk  : 无
 if exist dist\*win.zip (echo   win  : & dir dist\*win.zip /b) else echo   win  : 无
 if exist dist\*linux.zip (echo   linux: & dir dist\*linux.zip /b) else echo   linux: 无
 if exist dist\*macos.zip (echo   macos: & dir dist\*macos.zip /b) else echo   macos: 无

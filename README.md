@@ -134,7 +134,7 @@ Windows 用户直接双击 `运行.bat` 即可（自动释放占用的 9530 端�
 
 | 脚本 | 平台 | 产物 |
 | ---- | ---- | ---- |
-| `打包fpk.bat` | Windows（需 `fnos\fnpack.exe`） | `fpk/reminder-<版本>.fpk`（飞牛 fnOS 安装包） |
+| `打包fpk.bat` | Windows（需 `fnos\fnpack.exe`） | `dist/reminder-<版本>.fpk`（飞牛 fnOS 安装包） |
 | `打包win-zip.bat` | Windows | `dist/reminder-<版本>-win.zip`（含 `运行.bat`） |
 | `打包linux-zip.bat` | Linux | `dist/reminder-<版本>-linux.zip`（含 `启动.sh`，首次运行自动安装依赖） |
 | `打包macos-zip.bat` | macOS | `dist/reminder-<版本>-macos.zip`（含 `启动.command`，Finder 双击即可，首次运行自动安装依赖） |

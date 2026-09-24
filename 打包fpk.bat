@@ -4,7 +4,7 @@ rem  fnOS (FeiNiu) fpk builder - reminder
 rem  Usage: double-click, or run from a terminal (paths are relative to %~dp0).
 rem  Prereq: fnpack.exe (Windows x86) in fnos\ or on PATH
 rem          https://developer.fnnas.com/docs/cli/fnpack/
-rem  Output: fpk\reminder-<version>.fpk
+rem  Output: dist\reminder-<version>.fpk
 rem  NOTE: keep this file ASCII-only; batch parsing of non-ASCII is fragile.
 rem ===========================================================================
 setlocal
@@ -13,7 +13,7 @@ set "PROJ=%~dp0"
 set "TOOLS=%PROJ%fnos"
 set "PKG=%TOOLS%\reminder"
 set "SERVER=%PKG%\app\server"
-set "OUTDIR=%PROJ%fpk"
+set "OUTDIR=%PROJ%dist"
 
 echo === Build fnOS fpk: reminder ===
 echo.
