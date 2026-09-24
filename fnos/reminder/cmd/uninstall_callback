@@ -1,3 +1,10 @@
 #!/bin/bash
-# 卸载后：提醒数据保存在共享目录中，此处不做删除，避免误删用户数据
+# 卸载后：根据用户选择决定是否删除数据
+# wizard_delete_data = yes 时彻底清除，= no（默认）时保留
+
+DATA_DIR="${TRIM_DATA_SHARE_PATHS%%:*}"
+if [ "${wizard_delete_data:-no}" = "yes" ] && [ -n "${DATA_DIR}" ]; then
+    rm -rf "${DATA_DIR}/data"
+fi
+
 exit 0

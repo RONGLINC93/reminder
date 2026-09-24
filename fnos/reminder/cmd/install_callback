@@ -1,5 +1,13 @@
 #!/bin/bash
-# 安装后：初始化数据目录（已存在则保留）
+# 安装后：校验用户协议 + 初始化数据目录（已存在则保留）
+
+# 必须先同意《用户协议》，否则取消安装
+if [ "${wizard_agree_license:-no}" != "yes" ]; then
+    if [ -n "${TRIM_TEMP_LOGFILE}" ]; then
+        echo "未同意《用户协议》，安装已取消。" > "${TRIM_TEMP_LOGFILE}"
+    fi
+    exit 1
+fi
 
 if [ ! -d "${TRIM_APPDEST}/server" ]; then
     if [ -n "${TRIM_TEMP_LOGFILE}" ]; then

@@ -4,11 +4,27 @@
     "items": [
       {
         "type": "tips",
-        "helpText": "卸载只会移除程序文件，提醒数据保存在共享文件夹 reminder 中，<b>不会被删除</b>。"
+        "helpText": "卸载将从飞牛中移除「提醒」程序文件。<br>您的提醒数据保存在共享文件夹 reminder 中，是否一并删除请在下方的选项中选择。"
       },
       {
-        "type": "tips",
-        "helpText": "如需彻底清除，请在卸载后前往「文件」手动删除共享文件夹 reminder 下的 data 目录。"
+        "type": "radio",
+        "field": "wizard_delete_data",
+        "label": "请选择卸载时的数据处理方式：",
+        "initValue": "no",
+        "options": [
+          {
+            "label": "保留数据（推荐 — 重新安装后可继续使用原有提醒与通知配置）",
+            "value": "no"
+          },
+          {
+            "label": "删除数据（将彻底清除共享文件夹 reminder 下的全部提醒、设置与通知记录，不可恢复）",
+            "value": "yes"
+          }
+        ],
+        "rules": {
+          "required": true,
+          "message": "请选择是否删除应用数据"
+        }
       }
     ]
   }
