@@ -104,9 +104,9 @@ echo Install: upload it in the fnOS App Center, or over SSH run
 echo   appcenter-cli install-fpk "%OUT%"
 echo.
 
-if exist "%OUT%" start "" explorer.exe /select,"%OUT%"
+if not defined PACKAGE_ALL if exist "%OUT%" start "" explorer.exe /select,"%OUT%"
 
-pause
+if not defined PACKAGE_ALL pause
 exit /b 0
 
 :nofnpack
@@ -117,12 +117,14 @@ echo   https://developer.fnnas.com/docs/cli/fnpack/
 echo The downloaded file has no extension - rename it to fnpack.exe and put it in:
 echo   %TOOLS%
 echo.
-pause
+
+if not defined PACKAGE_ALL pause
 exit /b 1
 
 :fail
 echo.
 echo Build FAILED. See the output above.
 echo.
-pause
+
+if not defined PACKAGE_ALL pause
 exit /b 1

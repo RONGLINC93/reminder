@@ -2,6 +2,12 @@
 chcp 65001 >nul
 cd /d "%~dp0"
 
+REM 若缺少依赖，自动安装（生产依赖），确保开箱即用
+if not exist node_modules (
+  echo 未检测到 node_modules，正在安装依赖（npm install --omit=dev）...
+  npm install --omit=dev
+)
+
 set PORT=9530
 set TITLE=提醒网站 - 运行中(请勿关闭此窗口)
 

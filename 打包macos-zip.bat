@@ -1,11 +1,9 @@
 @echo off
 rem ===========================================================================
-rem  reminder - Windows zip release builder
-rem  Usage: double-click, or run from a terminal (paths are relative to %~dp0).
-rem  Output: dist\reminder-<version>-win.zip
-rem  Contents: server.js / package.json / public / lib / node_modules
-rem            运行.bat (launcher) / 停止.bat / README.md / CHANGELOG.md
-rem  NOTE: keep this file ASCII-only; batch parsing of non-ASCII is fragile.
+rem  reminder - macOS zip release builder (Windows)
+rem  用法: 双击, 或终端运行 (路径相对 %~dp0)
+rem  输出: dist\reminder-<version>-macos.zip (含 启动.command, Finder 双击即可)
+rem  说明: 包内不含 node_modules; 解压后首次双击 启动.command 会自动安装该平台依赖
 rem ===========================================================================
 setlocal
 chcp 65001 >nul 2>&1
@@ -14,19 +12,21 @@ set "VER=1.0.0"
 for /f "tokens=2 delims=:," %%v in ('findstr "version" "%PROJ%package.json"') do set "VER=%%v"
 set "VER=%VER:"=%"
 set "VER=%VER: =%"
-set "NAME=reminder-%VER%-win"
+set "NAME=reminder-%VER%-macos"
 set "DIST=%PROJ%dist"
 set "STG=%DIST%\staging\%NAME%"
 set "OUT=%DIST%\%NAME%.zip"
+set "LAUNCHER=%PROJ%fnos\launcher\启动.command"
 
-echo === Build Windows zip: %NAME%.zip ===
+echo === Build macOS zip: %NAME%.zip ===
+echo （包内不含 node_modules；解压后首次运行 启动.command 会自动安装依赖）
 echo.
 
 if not exist "%DIST%" mkdir "%DIST%" 2>nul
 if exist "%STG%" rmdir /s /q "%STG%"
 mkdir "%STG%" 2>nul
 
-echo [1/3] Copy application files...
+echo [1/3] 复制程序文件 ...
 copy /y "%PROJ%server.js" "%STG%\" >nul
 if errorlevel 1 goto fail
 copy /y "%PROJ%package.json" "%STG%\" >nul
@@ -38,49 +38,29 @@ xcopy "%PROJ%public" "%STG%\public" /e /i /y /q >nul
 if errorlevel 1 goto fail
 xcopy "%PROJ%lib" "%STG%\lib" /e /i /y /q >nul
 if errorlevel 1 goto fail
-copy /y "%PROJ%运行.bat" "%STG%\运行.bat" >nul
+
+echo [2/3] 复制启动脚本 启动.command ...
+copy /y "%LAUNCHER%" "%STG%\启动.command" >nul
 if errorlevel 1 goto fail
-if exist "%PROJ%停止.bat" copy /y "%PROJ%停止.bat" "%STG%\" >nul
 
-echo [2/3] Dependencies...
-if exist "%PROJ%node_modules" (
-  robocopy "%PROJ%node_modules" "%STG%\node_modules" /E /NFL /NDL /NJH /NJS /NC /NS /NP >nul
-  if errorlevel 8 (
-    xcopy "%PROJ%node_modules" "%STG%\node_modules" /e /i /y /q >nul
-    if errorlevel 1 goto fail
-  )
-) else (
-  echo     node_modules not found, running npm install --omit=dev ...
-  pushd "%STG%"
-  npm install --omit=dev
-  set "RC=%ERRORLEVEL%"
-  popd
-  if not "%RC%"=="0" goto fail
-)
-
-echo [3/3] Create zip archive...
+echo [3/3] 生成压缩包 ...
 if exist "%OUT%" del /f /q "%OUT%"
-tar -a -c -f "%OUT%" -C "%STG%" . >nul 2>&1
-if errorlevel 1 (
-  powershell -NoProfile -Command "Compress-Archive -Path '%STG%\*' -DestinationPath '%OUT%' -Force"
-)
+powershell -NoProfile -Command "Compress-Archive -Path '%STG%\*' -DestinationPath '%OUT%' -Force"
 if errorlevel 1 goto fail
 if not exist "%OUT%" goto fail
 
 echo.
 echo === Done: %OUT% ===
-echo Usage: unzip, then double-click 运行.bat (http://localhost:9530).
+echo 用法: 解压后在 Finder 中双击 启动.command（首次会自动安装依赖），自动打开 http://localhost:9530
+echo （首次若提示来自身份不明的开发者，请到「系统设置 → 隐私与安全性」点击「仍要打开」）
 echo.
 
 if not defined PACKAGE_ALL start "" explorer.exe /select,"%OUT%"
-
 if not defined PACKAGE_ALL pause
 exit /b 0
 
 :fail
 echo.
 echo Build FAILED. See the output above.
-echo.
-
 if not defined PACKAGE_ALL pause
 exit /b 1

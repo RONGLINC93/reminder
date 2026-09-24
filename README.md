@@ -135,14 +135,17 @@ Windows 用户直接双击 `运行.bat` 即可（自动释放占用的 9530 端�
 | 脚本 | 平台 | 产物 |
 | ---- | ---- | ---- |
 | `打包fpk.bat` | Windows（需 `fnos\fnpack.exe`） | `fpk/reminder-<版本>.fpk`（飞牛 fnOS 安装包） |
-| `fnos/build-fpk.sh` | Linux / macOS / WSL | 同上 |
 | `打包win-zip.bat` | Windows | `dist/reminder-<版本>-win.zip`（含 `运行.bat`） |
-| `打包linux-zip.sh` | Linux | `dist/reminder-<版本>-linux.zip`（含 `启动.sh`） |
-| `打包macos-zip.sh` | macOS | `dist/reminder-<版本>-macos.zip`（含 `启动.command`，Finder 双击即可） |
+| `打包linux-zip.bat` | Linux | `dist/reminder-<版本>-linux.zip`（含 `启动.sh`，首次运行自动安装依赖） |
+| `打包macos-zip.bat` | macOS | `dist/reminder-<版本>-macos.zip`（含 `启动.command`，Finder 双击即可，首次运行自动安装依赖） |
+| `全部打包.bat` | Windows | 依次执行上面四个脚本，一次性产出全部平台包 |
+| `发布.bat` | Windows | 先 `全部打包.bat`，再 `node release.js` 打 tag、建 GitHub Release 并上传产物 |
 
 说明：
 
-- 依赖已随仓库提交，`node_modules` 会一并打进包内；若本地缺失，脚本会自动 `npm install --omit=dev`
+- 前四个均为 Windows 批处理，在 Windows 上即可打包出对应平台的离线包（压缩由 PowerShell 完成，无需 WSL / Git Bash）
+- Windows 包自带 `node_modules`，开箱即用；Linux / macOS 包为减小体积**不含** `node_modules`，解压后首次运行 `启动.sh` / `启动.command` 会自动 `npm install --omit=dev`
+- `fnos/build-fpk.sh` 仅作为 Linux / macOS / WSL 上手工构建 fpk 的备用脚本
 - 服务默认监听 `::`（IPv6 双栈），**同时支持 IPv4 与 IPv6 访问**；宿主不支持 IPv6 时自动回退 `0.0.0.0`
 - fnOS 上提醒数据保存在共享文件夹 `reminder/data`，升级 / 卸载不会丢失
 - fpk 安装：飞牛应用中心上传，或 SSH 执行 `appcenter-cli install-fpk reminder-<版本>.fpk`
