@@ -56,7 +56,7 @@ reminder/
 
 ```bash
 cd reminder
-npm install
+npm install   # 依赖已随仓库提交，可跳过此步
 npm start
 ```
 

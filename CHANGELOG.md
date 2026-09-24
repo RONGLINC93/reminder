@@ -31,10 +31,8 @@
 ### 变更
 
 - 依赖精简为 `express` 与 `lunar-javascript`，无数据库，数据落在 `data/*.json`
-
-### 修复
-
-- 停止跟踪并忽略 `node_modules/`，避免依赖目录进入版本库；`data/` 与 `.env` 不入库，令牌与提醒数据不会上传
+- `node_modules/` 随仓库一并提交，换机器拉取后无需 `npm install`，直接启动即可
+- `data/` 与 `.env` 不入库，令牌与提醒数据不会上传
 
 ## 版本说明
 
