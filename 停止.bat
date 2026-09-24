@@ -8,4 +8,5 @@ for /f "tokens=5" %%a in ('netstat -ano ^| findstr /r ":%PORT% "') do (
   )
 )
 echo 完成。
-pause
+echo   (5 秒后自动关闭窗口)
+timeout /t 5 /nobreak >nul

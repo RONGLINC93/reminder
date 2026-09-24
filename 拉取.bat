@@ -16,4 +16,5 @@ if "%RC%"=="0" (
 ) else (
   echo [失败] 拉取未成功，请看上面的提示
 )
-pause
+echo   (5 秒后自动关闭窗口)
+timeout /t 5 /nobreak >nul

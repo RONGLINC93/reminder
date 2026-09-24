@@ -106,7 +106,7 @@ echo.
 
 if not defined PACKAGE_ALL if exist "%OUT%" start "" explorer.exe /select,"%OUT%"
 
-if not defined PACKAGE_ALL pause
+if not defined PACKAGE_ALL (echo   (5 秒后自动关闭窗口) & timeout /t 5 /nobreak >nul)
 exit /b 0
 
 :nofnpack
@@ -118,7 +118,7 @@ echo The downloaded file has no extension - rename it to fnpack.exe and put it i
 echo   %TOOLS%
 echo.
 
-if not defined PACKAGE_ALL pause
+if not defined PACKAGE_ALL (echo   (5 秒后自动关闭窗口) & timeout /t 5 /nobreak >nul)
 exit /b 1
 
 :fail
@@ -126,5 +126,5 @@ echo.
 echo Build FAILED. See the output above.
 echo.
 
-if not defined PACKAGE_ALL pause
+if not defined PACKAGE_ALL (echo   (5 秒后自动关闭窗口) & timeout /t 5 /nobreak >nul)
 exit /b 1
