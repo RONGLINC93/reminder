@@ -3,7 +3,7 @@
         "reminder.Reminder": {
             "title": "提醒",
             "icon": "images/icon_{0}.png",
-            "type": "iframe",
+            "type": "url",
             "protocol": "http",
             "port": "9530",
             "url": "/",
