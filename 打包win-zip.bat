@@ -72,6 +72,8 @@ echo === Done: %OUT% ===
 echo Usage: unzip, then double-click 运行.bat (http://localhost:9530).
 echo.
 
+rmdir /s /q "%STG%"
+
 if not defined PACKAGE_ALL start "" explorer.exe /select,"%OUT%"
 
 if not defined PACKAGE_ALL pause

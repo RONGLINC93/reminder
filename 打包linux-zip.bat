@@ -54,6 +54,8 @@ echo === Done: %OUT% ===
 echo 用法: 解压后 chmod +x 启动.sh && ./启动.sh（首次会自动安装依赖），访问 http://localhost:9530
 echo.
 
+rmdir /s /q "%STG%"
+
 if not defined PACKAGE_ALL start "" explorer.exe /select,"%OUT%"
 if not defined PACKAGE_ALL pause
 exit /b 0

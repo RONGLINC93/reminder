@@ -55,6 +55,8 @@ echo 用法: 解压后在 Finder 中双击 启动.command（首次会自动安�
 echo （首次若提示来自身份不明的开发者，请到「系统设置 → 隐私与安全性」点击「仍要打开」）
 echo.
 
+rmdir /s /q "%STG%"
+
 if not defined PACKAGE_ALL start "" explorer.exe /select,"%OUT%"
 if not defined PACKAGE_ALL pause
 exit /b 0
