@@ -153,7 +153,7 @@ button { font-family: inherit; cursor: pointer; }
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
   gap: 20px;
-  padding: 0 32px 40px;
+  padding: 0 32px 0px;
   align-items: start;
 }
 
@@ -567,6 +567,26 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 14px;
   box-shadow: 0 12px 30px rgba(20,24,38,.3);
   z-index: 80;
+}
+
+/* -------------------------------- 页脚 -------------------------------- */
+
+.site-foot {
+  padding: 18px 16px 26px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.site-foot a {
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--line);
+}
+
+.site-foot a:hover {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
 }
 
 /* -------------------------------- 响应式 -------------------------------- */
