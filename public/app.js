@@ -1578,12 +1578,26 @@ function bindEvents() {
   });
 }
 
+async function loadVersion() {
+  try {
+    const res = await fetch('/api/version');
+    if (!res.ok) return;
+    const data = await res.json();
+    const txt = 'v' + (data.version || '—');
+    const foot = document.getElementById('app-version');
+    if (foot) foot.textContent = txt;
+    const set = document.getElementById('set-version');
+    if (set) set.textContent = txt;
+  } catch (e) { /* 版本号仅为展示，失败忽略 */ }
+}
+
 bindEvents();
 renderTypePicker();
 renderColorPicker();
 renderLunarPicker();
 renderWeekStartPicker();
 renderWeekdays();
+loadVersion();
 
 // 启动：已有会话则尝试验证并加载，否则显示登录界面
 if (state.token) {

@@ -9,6 +9,8 @@ const { createAuth } = require('./lib/auth');
 const PORT = process.env.PORT || 9530;
 const CHECK_INTERVAL_MS = 60 * 1000;
 const ROOT = __dirname;
+const PKG = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+const APP_VERSION = PKG.version || '0.0.0';
 // 数据目录：默认程序目录下的 data/；fnOS 等环境可通过 REMINDER_DATA_DIR 指定到共享目录
 const DATA_DIR = process.env.REMINDER_DATA_DIR || path.join(ROOT, 'data');
 // 监听地址：默认 '::'（IPv6 双栈，同时接受 IPv4 与 IPv6 访问），不支持时自动回退 0.0.0.0
@@ -59,7 +61,7 @@ function requireAuth(req, res, next) {
 }
 
 app.use((req, res, next) => {
-  if (req.path === '/api/login' || req.path === '/api/health') return next();
+  if (req.path === '/api/login' || req.path === '/api/health' || req.path === '/api/version') return next();
   // 对外通知接口自带 Token 校验，不受登录限制
   if (req.path.startsWith('/api/webhook/')) return next();
   if (req.path.startsWith('/api/')) return requireAuth(req, res, next);
@@ -493,7 +495,9 @@ app.post('/api/webhook/notify', async (req, res, next) => {
   }
 });
 
-app.get('/api/health', (req, res) => res.json({ ok: true, count: readAll().length }));
+app.get('/api/version', (req, res) => res.json({ version: APP_VERSION }));
+
+app.get('/api/health', (req, res) => res.json({ ok: true, count: readAll().length, version: APP_VERSION }));
 
 app.use((err, req, res, next) => {
   const status = err instanceof HttpError ? err.status : 500;
