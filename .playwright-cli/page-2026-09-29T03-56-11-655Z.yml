@@ -1,0 +1,61 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]: R
+      - generic [ref=e6]:
+        - heading "提醒" [level=1] [ref=e7]
+        - paragraph [ref=e8]: 登录后继续
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]: 用户名
+        - textbox "用户名" [ref=e12]:
+          - /placeholder: 请输入用户名
+      - generic [ref=e13]:
+        - generic [ref=e14]: 密码
+        - textbox "密码" [active] [ref=e15]:
+          - /placeholder: 请输入密码
+      - button "登 录" [ref=e16] [cursor=pointer]
+  - banner [ref=e17]:
+    - generic [ref=e18]:
+      - generic [ref=e19]: R
+      - generic [ref=e20]:
+        - heading "提醒" [level=1] [ref=e21]
+        - paragraph [ref=e22]: 事件 · 生日 · 办事，一个日历全记住
+    - generic [ref=e23]:
+      - button "+ 新建提醒" [ref=e24] [cursor=pointer]
+      - button "⚙" [ref=e25] [cursor=pointer]
+      - button "退出" [ref=e27] [cursor=pointer]
+  - main [ref=e28]:
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - button "‹" [ref=e32] [cursor=pointer]
+          - heading "—" [level=2] [ref=e33]
+          - button "›" [ref=e34] [cursor=pointer]
+        - generic [ref=e35]:
+          - button "回到今天" [ref=e36] [cursor=pointer]
+          - generic [ref=e37]:
+            - button "月历" [ref=e38] [cursor=pointer]
+            - button "列表" [ref=e39] [cursor=pointer]
+      - generic [ref=e41]:
+        - generic [ref=e42]: 一
+        - generic [ref=e43]: 二
+        - generic [ref=e44]: 三
+        - generic [ref=e45]: 四
+        - generic [ref=e46]: 五
+        - generic [ref=e47]: 六
+        - generic [ref=e48]: 日
+    - generic [ref=e49]:
+      - complementary [ref=e50]:
+        - generic [ref=e52]:
+          - paragraph
+          - button "+ 新建提醒" [ref=e53] [cursor=pointer]
+        - generic [ref=e54]:
+          - button "当日安排" [ref=e55] [cursor=pointer]
+          - button "黄历" [ref=e56] [cursor=pointer]
+        - heading "即将到来" [level=3] [ref=e61]
+      - generic [ref=e62]: 下月预览
+  - contentinfo [ref=e64]:
+    - text: 版权所有 © 2026
+    - link "RONGLINC93" [ref=e65] [cursor=pointer]:
+      - /url: https://github.com/RONGLINC93

@@ -700,9 +700,10 @@ function renderSide() {
   bindItemActions(box);
 }
 
-/** 右侧详情顶部的迷你日历：展示所选日期所在月份，可独立翻月、点选日期 */
+/** 右侧底部的迷你日历：始终展示"当前主视图月份的下一个月"，点选可跳转 */
 function renderSideCalendar() {
-  const cursor = state.sideCursor;
+  const base = state.cursor;
+  const cursor = new Date(base.getFullYear(), base.getMonth() + 1, 1);
   const year = cursor.getFullYear();
   const month = cursor.getMonth();
   const first = new Date(year, month, 1);
@@ -713,11 +714,7 @@ function renderSideCalendar() {
   const sel = state.selected;
   const labels = WEEK_LABELS[state.settings.weekStart] || WEEK_LABELS.monday;
 
-  let html = `<div class="side-cal-head">
-      <button class="icon-btn" id="side-prev" title="上个月">‹</button>
-      <span>${year} 年 ${month + 1} 月</span>
-      <button class="icon-btn" id="side-next" title="下个月">›</button>
-    </div>
+  let html = `<div class="side-cal-head"><span>${year} 年 ${month + 1} 月</span></div>
     <div class="side-weekdays">${labels.map((w) => `<span>${w}</span>`).join('')}</div>
     <div class="side-grid">`;
   for (let i = 0; i < cells; i += 1) {
@@ -735,23 +732,13 @@ function renderSideCalendar() {
   }
   html += '</div>';
 
-  const el = document.getElementById('side-cal');
+  const el = document.getElementById('next-cal');
   el.innerHTML = html;
-  el.querySelector('#side-prev').addEventListener('click', (e) => {
-    e.stopPropagation();
-    state.sideCursor = new Date(year, month - 1, 1);
-    renderSide();
-  });
-  el.querySelector('#side-next').addEventListener('click', (e) => {
-    e.stopPropagation();
-    state.sideCursor = new Date(year, month + 1, 1);
-    renderSide();
-  });
   el.querySelectorAll('.scell').forEach((c) => {
     c.addEventListener('click', () => {
       state.selected = c.dataset.key;
       state.selectedRange = [];
-      state.sideCursor = startOfMonth(parseKey(c.dataset.key));
+      state.cursor = startOfMonth(parseKey(c.dataset.key));
       renderAll();
     });
   });
