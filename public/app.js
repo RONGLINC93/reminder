@@ -33,6 +33,7 @@ const state = {
   cursor: startOfMonth(new Date()),
   selected: keyOf(new Date()),
   selectedRange: [],
+  sideCursor: startOfMonth(new Date()),
   view: 'month',
   lastView: 'month',
   filter: 'all',
@@ -477,8 +478,10 @@ function renderCalendar() {
   const year = state.cursor.getFullYear();
   const month = state.cursor.getMonth();
   document.getElementById('cal-title').textContent = `${year} 年 ${month + 1} 月`;
-  // 今天已被选中时隐藏「回到今天」按钮
-  setHidden('btn-today', state.selected === todayKey());
+  // 仅当“正在看当月且选中今天”时隐藏「回到今天」按钮，其余情况（看别的月份/选了别的日期）都显示
+  const now = new Date();
+  const onCurrentMonth = year === now.getFullYear() && month === now.getMonth();
+  setHidden('btn-today', onCurrentMonth && state.selected === todayKey());
 
   renderWeekdays();
   const grid = document.getElementById('calendar-grid');
@@ -551,6 +554,7 @@ function renderCalendar() {
       const key = cell.dataset.date;
       state.selected = key;
       state.selectedRange = [];
+      state.sideCursor = startOfMonth(parseKey(key));
       renderAll();
     });
     cell.addEventListener('dblclick', () => openModal(null, cell.dataset.date));
@@ -674,15 +678,16 @@ function renderSide() {
   const d = parseKey(key);
   const week = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()];
   const list = visibleItems().filter((it) => occursOn(it, key));
-  document.getElementById('side-title').textContent = `${d.getMonth() + 1} 月 ${d.getDate()} 日 · 周${week}`;
   const diff = diffDays(todayKey(), key);
   const linfo = state.settings.showLunar ? lunarOf(key) : null;
   const hol = state.settings.showHoliday !== false ? holidayOf(key) : null;
   const holTxt = hol ? ` · ${hol.name}${hol.work ? '（调休上班）' : '（放假）'}` : '';
   document.getElementById('side-subtitle').textContent =
-    `${list.length} 条提醒 · ${diff === 0 ? '就是今天' : diff > 0 ? `还有 ${diff} 天` : `已过 ${-diff} 天`}`
+    `${d.getMonth() + 1} 月 ${d.getDate()} 日 · 周${week} · ${list.length} 条提醒 · ${diff === 0 ? '就是今天' : diff > 0 ? `还有 ${diff} 天` : `已过 ${-diff} 天`}`
     + (linfo ? ` · 农历 ${linfo.monthName}${linfo.dayName}${linfo.festival ? `（${linfo.festival}）` : ''}` : '')
     + holTxt;
+
+  renderSideCalendar();
 
   const box = document.getElementById('day-list');
   const holCard = hol ? holidayCardHtml(key, hol) : '';
@@ -692,6 +697,63 @@ function renderSide() {
   }
   box.innerHTML = holCard + list.map((it) => itemCardHtml(it, key)).join('');
   bindItemActions(box);
+}
+
+/** 右侧详情顶部的迷你日历：展示所选日期所在月份，可独立翻月、点选日期 */
+function renderSideCalendar() {
+  const cursor = state.sideCursor;
+  const year = cursor.getFullYear();
+  const month = cursor.getMonth();
+  const first = new Date(year, month, 1);
+  const offset = weekStartOffset(first);
+  const total = daysInMonth(year, month);
+  const cells = Math.ceil((offset + total) / 7) * 7;
+  const today = todayKey();
+  const sel = state.selected;
+  const labels = WEEK_LABELS[state.settings.weekStart] || WEEK_LABELS.monday;
+
+  let html = `<div class="side-cal-head">
+      <button class="icon-btn" id="side-prev" title="上个月">‹</button>
+      <span>${year} 年 ${month + 1} 月</span>
+      <button class="icon-btn" id="side-next" title="下个月">›</button>
+    </div>
+    <div class="side-weekdays">${labels.map((w) => `<span>${w}</span>`).join('')}</div>
+    <div class="side-grid">`;
+  for (let i = 0; i < cells; i += 1) {
+    const cur = new Date(year, month, 1 - offset + i);
+    const k = keyOf(cur);
+    const other = cur.getMonth() !== month;
+    const cls = ['scell'];
+    if (other) cls.push('other');
+    if (k === sel) cls.push('selected');
+    if (k === today) cls.push('today');
+    const hol = state.settings.showHoliday !== false ? holidayOf(k) : null;
+    if (hol) cls.push(hol.work ? 'workday' : 'holiday');
+    if (visibleItems().some((it) => occursOn(it, k))) cls.push('has-items');
+    html += `<div class="${cls.join(' ')}" data-key="${k}">${cur.getDate()}</div>`;
+  }
+  html += '</div>';
+
+  const el = document.getElementById('side-cal');
+  el.innerHTML = html;
+  el.querySelector('#side-prev').addEventListener('click', (e) => {
+    e.stopPropagation();
+    state.sideCursor = new Date(year, month - 1, 1);
+    renderSide();
+  });
+  el.querySelector('#side-next').addEventListener('click', (e) => {
+    e.stopPropagation();
+    state.sideCursor = new Date(year, month + 1, 1);
+    renderSide();
+  });
+  el.querySelectorAll('.scell').forEach((c) => {
+    c.addEventListener('click', () => {
+      state.selected = c.dataset.key;
+      state.selectedRange = [];
+      state.sideCursor = startOfMonth(parseKey(c.dataset.key));
+      renderAll();
+    });
+  });
 }
 
 function renderUpcoming() {
@@ -763,6 +825,7 @@ function renderUpcoming() {
         const rest = r.dataset.rest === '1';
         const span = Number(r.dataset.span || '0');
         state.selected = r.dataset.date;
+        state.sideCursor = startOfMonth(parseKey(r.dataset.date));
         if (rest && span > 1) {
           state.selectedRange = [];
           for (let i = 0; i < span; i += 1) state.selectedRange.push(addDaysKey(r.dataset.date, i));
@@ -802,8 +865,33 @@ function renderAll() {
     renderList();
   }
 
+  renderBigDate();
   renderSide();
   renderUpcoming();
+}
+
+/** 右侧顶部的大号“选中日期” */
+function renderBigDate() {
+  const el = document.getElementById('today-big');
+  if (!el) return;
+  const key = state.selected;
+  const d = parseKey(key);
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  const wd = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()];
+  const diff = diffDays(todayKey(), key);
+  const rel = key === todayKey() ? '今天' : diff > 0 ? `还有 ${diff} 天` : `已过 ${-diff} 天`;
+  const linfo = state.settings.showLunar ? lunarOf(key) : null;
+  const lunarTxt = linfo ? `${linfo.monthName}${linfo.dayName}` : '';
+  const hol = state.settings.showHoliday !== false ? holidayOf(key) : null;
+  const holTxt = hol ? (hol.work ? ' · 调休上班' : ` · ${hol.name}放假`) : '';
+  el.innerHTML = `
+    <div class="tb-meta">
+      <div class="tb-date">${y} 年 ${m} 月 ${day} 日 · 星期${wd}</div>
+      <div class="tb-lunar">${lunarTxt ? `农历 ${lunarTxt}` : rel}${holTxt}</div>
+    </div>
+    <div class="tb-day">${day}</div>`;
 }
 
 /* ------------------------------ 弹窗表单 ------------------------------ */
@@ -1344,6 +1432,7 @@ function bindEvents() {
     state.cursor = startOfMonth(new Date());
     state.selected = todayKey();
     state.selectedRange = [];
+    state.sideCursor = startOfMonth(new Date());
     renderAll();
   });
   // 鼠标滚轮在日历区域切换月份
