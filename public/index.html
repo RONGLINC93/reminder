@@ -91,18 +91,22 @@
 
       <div class="side-head">
         <div id="side-cal" class="side-cal"></div>
-
-        <div id="almanac" class="almanac"></div>
-        
         <p id="side-subtitle" class="muted side-sub"></p>
         <button class="btn soft" id="btn-new-day">+ 新建提醒</button>
-      </div>      
+      </div>
 
-      <div id="day-list" class="day-list"></div>
+      <div class="right-tabs" id="right-tabs">
+        <button class="rtab active" data-tab="day">当日安排</button>
+        <button class="rtab" data-tab="almanac">黄历</button>
+      </div>
+      <div id="almanac" class="almanac"></div>
+      <div id="day-pane">
+        <div id="day-list" class="day-list"></div>
 
-      <div class="upcoming">
-        <h3>即将到来</h3>
-        <div id="upcoming-list"></div>
+        <div class="upcoming">
+          <h3>即将到来</h3>
+          <div id="upcoming-list"></div>
+        </div>
       </div>
     </aside>
   </main>

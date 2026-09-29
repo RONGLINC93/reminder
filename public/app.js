@@ -34,6 +34,7 @@ const state = {
   selected: keyOf(new Date()),
   selectedRange: [],
   sideCursor: startOfMonth(new Date()),
+  rightTab: 'day',
   view: 'month',
   lastView: 'month',
   filter: 'all',
@@ -869,6 +870,16 @@ function renderAll() {
   renderSide();
   renderAlmanac();
   renderUpcoming();
+  applyRightTab();
+}
+
+/** 右侧面板在「黄历 / 当日安排」之间切换，一次只显示一块以降低高度 */
+function applyRightTab() {
+  const showAlmanac = state.rightTab === 'almanac' && hasLunarLib;
+  setHidden('almanac', !showAlmanac);
+  setHidden('day-pane', !(state.rightTab === 'day' || !hasLunarLib));
+  const tabs = document.getElementById('right-tabs');
+  if (tabs) tabs.querySelectorAll('.rtab').forEach((b) => b.classList.toggle('active', b.dataset.tab === state.rightTab && hasLunarLib));
 }
 
 /** 右侧顶部的大号“选中日期” */
@@ -939,7 +950,6 @@ function renderAlmanac() {
   const daySX = call(() => l.getDayShengXiao());
   const yearSX = call(() => l.getYearShengXiao());
 
-  el.classList.remove('hidden');
   el.innerHTML = `
     <div class="alm-head">黄历 · ${call(() => linfo.monthName)}${call(() => linfo.dayName)}</div>
     <div class="alm-ganzhi">${yearGZ}年 ${monthGZ}月 ${dayGZ}日 · ${yearSX}年 · 日${daySX}</div>
@@ -1566,6 +1576,10 @@ function bindEvents() {
   });
   document.getElementById('view-switch').querySelectorAll('[data-view]').forEach((btn) => {
     btn.addEventListener('click', () => switchView(btn.dataset.view));
+  });
+  const rightTabsEl = document.getElementById('right-tabs');
+  if (rightTabsEl) rightTabsEl.querySelectorAll('.rtab').forEach((btn) => {
+    btn.addEventListener('click', () => { state.rightTab = btn.dataset.tab; applyRightTab(); });
   });
   document.getElementById('login-form').addEventListener('submit', doLogin);
   document.getElementById('btn-logout').addEventListener('click', logout);

@@ -385,6 +385,10 @@ button { font-family: inherit; cursor: pointer; }
 .alm-row:last-child { border-bottom: none; }
 .alm-k { flex: none; width: 62px; color: var(--muted); }
 .alm-v { flex: 1; color: #3a3f4b; line-height: 1.6; }
+
+.right-tabs { display: flex; gap: 6px; background: #eef1fb; border-radius: 10px; padding: 4px; }
+.right-tabs .rtab { flex: 1; border: none; background: transparent; color: var(--muted); font-size: 13px; font-weight: 600; padding: 7px 0; border-radius: 8px; cursor: pointer; transition: all .12s ease; }
+.right-tabs .rtab.active { background: #fff; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
 .side-head { display: flex; flex-direction: column; gap: 10px; }
 .side-head h3 { margin: 0; font-size: 16px; }
 .side-sub { margin: 0; font-size: 12px; line-height: 1.5; }
