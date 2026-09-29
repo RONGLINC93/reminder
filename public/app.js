@@ -867,6 +867,7 @@ function renderAll() {
 
   renderBigDate();
   renderSide();
+  renderAlmanac();
   renderUpcoming();
 }
 
@@ -892,6 +893,82 @@ function renderBigDate() {
       <div class="tb-lunar">${lunarTxt ? `农历 ${lunarTxt}` : rel}${holTxt}</div>
     </div>
     <div class="tb-day">${day}</div>`;
+}
+
+/** 右侧“黄历”面板：宜忌、五行、建除、值神、冲煞、星宿、神煞方位等 */
+function renderAlmanac() {
+  const el = document.getElementById('almanac');
+  if (!el) return;
+  if (!hasLunarLib) { el.classList.add('hidden'); return; }
+  const key = state.selected;
+  const d = parseKey(key);
+  let l;
+  try {
+    l = Solar.fromYmd(d.getFullYear(), d.getMonth() + 1, d.getDate()).getLunar();
+  } catch (e) {
+    el.classList.add('hidden');
+    return;
+  }
+  const call = (fn) => { try { const v = fn(); return v == null ? '' : v; } catch (e) { return ''; } };
+  const jn = (v) => (Array.isArray(v) ? v.join(' ') : (v == null ? '' : String(v)));
+
+  const linfo = lunarOf(key) || {};
+  const naYin = call(() => l.getDayNaYin());
+  const wuXing = naYin ? naYin.slice(-1) : '';
+  const yi = jn(call(() => l.getDayYi(2)));
+  const ji = jn(call(() => l.getDayJi(2)));
+  const chong = call(() => l.getDayChongDesc());
+  const sha = call(() => l.getDaySha());
+  const zhiXing = call(() => l.getZhiXing());
+  const tianShen = call(() => l.getDayTianShen());
+  const jiShen = jn(call(() => l.getDayJiShen()));
+  const xiongSha = jn(call(() => l.getDayXiongSha()));
+  const tai = call(() => l.getDayPositionTai());
+  const peng = [call(() => l.getPengZuGan()), call(() => l.getPengZuZhi())].filter(Boolean).join('；');
+  const xiu = call(() => l.getXiu());
+  const xiuLuck = call(() => l.getXiuLuck());
+  const xunKong = call(() => l.getDayXunKong());
+  const xi = call(() => l.getDayPositionXiDesc());
+  const fu = call(() => l.getDayPositionFuDesc());
+  const cai = call(() => l.getDayPositionCaiDesc());
+  const yangGui = call(() => l.getDayPositionYangGuiDesc());
+  const yinGui = call(() => l.getDayPositionYinGuiDesc());
+  const yearGZ = call(() => l.getYearInGanZhi());
+  const monthGZ = call(() => l.getMonthInGanZhi());
+  const dayGZ = call(() => l.getDayInGanZhi());
+  const daySX = call(() => l.getDayShengXiao());
+  const yearSX = call(() => l.getYearShengXiao());
+
+  el.classList.remove('hidden');
+  el.innerHTML = `
+    <div class="alm-head">黄历 · ${call(() => linfo.monthName)}${call(() => linfo.dayName)}</div>
+    <div class="alm-ganzhi">${yearGZ}年 ${monthGZ}月 ${dayGZ}日 · ${yearSX}年 · 日${daySX}</div>
+    <div class="alm-wx">五行纳音：<b>${naYin}</b>${wuXing ? `（${wuXing}）` : ''}</div>
+    <div class="alm-yiji">
+      <div class="yi"><span class="lab">宜</span><span class="val">${yi || '无'}</span></div>
+      <div class="ji"><span class="lab">忌</span><span class="val">${ji || '无'}</span></div>
+    </div>
+    <div class="alm-grid">
+      ${almRow('建除', zhiXing)}
+      ${almRow('值神', tianShen)}
+      ${almRow('冲煞', (chong ? '冲' + chong : '') + (sha ? ' 煞' + sha : ''))}
+      ${almRow('星宿', xiu + (xiuLuck ? `（${xiuLuck}）` : ''))}
+      ${almRow('旬空', xunKong)}
+      ${almRow('胎神', tai)}
+      ${almRow('吉神宜趋', jiShen)}
+      ${almRow('凶神宜忌', xiongSha)}
+      ${almRow('彭祖百忌', peng)}
+      ${almRow('喜神', xi)}
+      ${almRow('福神', fu)}
+      ${almRow('财神', cai)}
+      ${almRow('阳贵', yangGui)}
+      ${almRow('阴贵', yinGui)}
+    </div>`;
+}
+
+function almRow(label, val) {
+  if (!val) return '';
+  return `<div class="alm-row"><span class="alm-k">${label}</span><span class="alm-v">${escapeHtml(val)}</span></div>`;
 }
 
 /* ------------------------------ 弹窗表单 ------------------------------ */

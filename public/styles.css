@@ -366,6 +366,25 @@ button { font-family: inherit; cursor: pointer; }
 .today-big .tb-meta { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .today-big .tb-date { font-size: 17px; font-weight: 600; }
 .today-big .tb-lunar { font-size: 13px; opacity: .9; }
+
+.almanac { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 12px; }
+.alm-head { font-weight: 700; font-size: 13px; margin-bottom: 6px; color: var(--primary-dark); }
+.alm-ganzhi { color: var(--muted); margin-bottom: 6px; }
+.alm-wx { margin-bottom: 8px; }
+.alm-wx b { color: #b9722a; }
+.alm-yiji { display: flex; gap: 8px; margin-bottom: 8px; }
+.alm-yiji .yi, .alm-yiji .ji { flex: 1; border-radius: 8px; padding: 6px 8px; line-height: 1.6; }
+.alm-yiji .yi { background: #eafaf0; }
+.alm-yiji .ji { background: #fdeef0; }
+.alm-yiji .lab { display: inline-block; width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 50%; color: #fff; font-size: 11px; margin-right: 6px; }
+.alm-yiji .yi .lab { background: #2bb673; }
+.alm-yiji .ji .lab { background: #d8342f; }
+.alm-yiji .val { color: #3a3f4b; }
+.alm-grid { display: grid; grid-template-columns: 1fr; gap: 0; }
+.alm-row { display: flex; gap: 8px; padding: 3px 0; border-bottom: 1px dashed #eef0f5; }
+.alm-row:last-child { border-bottom: none; }
+.alm-k { flex: none; width: 62px; color: var(--muted); }
+.alm-v { flex: 1; color: #3a3f4b; line-height: 1.6; }
 .side-head { display: flex; flex-direction: column; gap: 10px; }
 .side-head h3 { margin: 0; font-size: 16px; }
 .side-sub { margin: 0; font-size: 12px; line-height: 1.5; }
