@@ -32,6 +32,7 @@ const state = {
   items: [],
   cursor: startOfMonth(new Date()),
   selected: keyOf(new Date()),
+  selectedRange: [],
   view: 'month',
   lastView: 'month',
   filter: 'all',
@@ -495,7 +496,7 @@ function renderCalendar() {
     const cls = ['cell'];
     if (other) cls.push('other-month');
     if (weekend) cls.push('weekend');
-    if (key === state.selected) cls.push('selected');
+    if (key === state.selected || state.selectedRange.includes(key)) cls.push('selected');
     if (key === today) cls.push('today');
 
     const hol = state.settings.showHoliday !== false ? holidayOf(key) : null;
@@ -547,10 +548,7 @@ function renderCalendar() {
     cell.addEventListener('click', () => {
       const key = cell.dataset.date;
       state.selected = key;
-      const d = parseKey(key);
-      if (d.getMonth() !== state.cursor.getMonth() || d.getFullYear() !== state.cursor.getFullYear()) {
-        state.cursor = startOfMonth(d);
-      }
+      state.selectedRange = [];
       renderAll();
     });
     cell.addEventListener('dblclick', () => openModal(null, cell.dataset.date));
@@ -736,7 +734,7 @@ function renderUpcoming() {
       const isWork = row.hol.work;
       const span = row.span > 1 ? ` · 连休 ${row.span} 天` : '';
       return `
-        <div class="upcoming-row ${isWork ? 'holiday-work' : 'holiday-rest'}">
+        <div class="upcoming-row ${isWork ? 'holiday-work' : 'holiday-rest'}" data-date="${row.next}" data-rest="${isWork ? '0' : '1'}" data-span="${row.span}">
           ${when}
           <span class="upcoming-title" title="${escapeHtml(row.hol.name)}${isWork ? '（调休上班）' : `（${row.next} 起${span ? `连休 ${row.span} 天` : '放假'}）`}">
             ${isWork ? '🔧' : '🎉'} ${escapeHtml(row.hol.name)}${isWork ? '·调休' : span}
@@ -746,13 +744,35 @@ function renderUpcoming() {
       `;
     }
     return `
-      <div class="upcoming-row">
+      <div class="upcoming-row" data-id="${row.it.id}">
         ${when}
         <span class="upcoming-title" title="${escapeHtml(row.it.title)}">${metaOf(row.it).icon} ${escapeHtml(row.it.title)}</span>
         ${date}
       </div>
     `;
   }).join('');
+
+  box.querySelectorAll('.upcoming-row').forEach((r) => {
+    r.addEventListener('click', () => {
+      if (r.dataset.id) {
+        state.selectedRange = [];
+        openModal(r.dataset.id);
+      } else if (r.dataset.date) {
+        const rest = r.dataset.rest === '1';
+        const span = Number(r.dataset.span || '0');
+        state.selected = r.dataset.date;
+        if (rest && span > 1) {
+          state.selectedRange = [];
+          for (let i = 0; i < span; i += 1) state.selectedRange.push(addDaysKey(r.dataset.date, i));
+        } else {
+          state.selectedRange = [];
+        }
+        state.cursor = startOfMonth(parseKey(r.dataset.date));
+        if (state.view !== 'month') switchView('month');
+        renderAll();
+      }
+    });
+  });
 }
 
 function setHidden(id, hidden) {
@@ -1204,12 +1224,23 @@ async function autoSave(partial, { render = false, msg } = {}) {
   }
 }
 
+let lastGeneralJson = '';
+let lastNotifyJson = '';
+
 async function autoSaveGeneral() {
-  await autoSave(generalPart(), { render: true, msg: '设置已保存' });
+  const partial = generalPart();
+  const json = JSON.stringify(partial);
+  if (json === lastGeneralJson) return;
+  lastGeneralJson = json;
+  await autoSave(partial, { render: true });
 }
 
 async function autoSaveNotify() {
-  await autoSave(notifyPart(), { msg: '机器人设置已保存' });
+  const partial = notifyPart();
+  const json = JSON.stringify(partial);
+  if (json === lastNotifyJson) return;
+  lastNotifyJson = json;
+  await autoSave(partial, {});
 }
 
 async function loadNotifyLogs() {
@@ -1310,8 +1341,21 @@ function bindEvents() {
   document.getElementById('btn-today').addEventListener('click', () => {
     state.cursor = startOfMonth(new Date());
     state.selected = todayKey();
+    state.selectedRange = [];
     renderAll();
   });
+  // 鼠标滚轮在日历区域切换月份
+  let wheelLock = false;
+  const calGrid = document.getElementById('calendar-grid');
+  calGrid.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (wheelLock) return;
+    const dir = e.deltaY > 0 ? 1 : -1;
+    state.cursor = new Date(state.cursor.getFullYear(), state.cursor.getMonth() + dir, 1);
+    renderAll();
+    wheelLock = true;
+    setTimeout(() => { wheelLock = false; }, 250);
+  }, { passive: false });
   document.getElementById('btn-new').addEventListener('click', () => openModal(null, state.selected));
   document.getElementById('btn-settings').addEventListener('click', () => openSettings('general'));
   document.getElementById('settings-close').addEventListener('click', closeSettings);
