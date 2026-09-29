@@ -20,7 +20,11 @@
             "label": "删除数据（将彻底清除共享文件夹 reminder 下的全部提醒、设置与通知记录，不可恢复）",
             "value": "yes"
           }
-        ]
+        ],
+        "rules": {
+          "required": true,
+          "message": "请选择是否删除应用数据"
+        }
       }
     ]
   }

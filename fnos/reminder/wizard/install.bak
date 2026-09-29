@@ -10,7 +10,7 @@
         "type": "radio",
         "field": "wizard_agree_license",
         "label": "请阅读并勾选以继续安装：",
-        "initValue": "yes",
+        "initValue": "no",
         "options": [
           {
             "label": "我已阅读并同意《用户协议》",
@@ -20,7 +20,11 @@
             "label": "不同意（将取消安装）",
             "value": "no"
           }
-        ]
+        ],
+        "rules": {
+          "required": true,
+          "message": "请选择是否同意用户协议"
+        }
       }
     ]
   },
