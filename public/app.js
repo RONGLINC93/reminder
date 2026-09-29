@@ -477,6 +477,8 @@ function renderCalendar() {
   const year = state.cursor.getFullYear();
   const month = state.cursor.getMonth();
   document.getElementById('cal-title').textContent = `${year} 年 ${month + 1} 月`;
+  // 今天已被选中时隐藏「回到今天」按钮
+  setHidden('btn-today', state.selected === todayKey());
 
   renderWeekdays();
   const grid = document.getElementById('calendar-grid');
