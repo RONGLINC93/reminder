@@ -3,9 +3,41 @@
 本项目所有重要变更都会记录在这里。
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)。
 
-## [未发布]
+## [未发布]（当前开发版本 1.0.6）
 
-暂无。
+### 变更
+- 前端与 `server.js` 小幅修复与微调（登录态处理、页面细节）
+
+## [1.0.5] - 2026-09-29
+
+### 变更
+- 发布版本对齐（无功能性代码变更，仅版本号推进）
+
+## [1.0.4] - 2026-09-29
+
+### 新增 / 优化
+- 前端界面与交互、样式进一步优化（日历与提醒列表体验、视觉细节）
+- 修复 fpk 安装回调中对协议的强制校验，解决部分环境下安装失败的问题
+
+## [1.0.3] - 2026-09-24
+
+### 变更
+- 清理冗余文件，版本号推进（无功能性代码变更）
+
+## [1.0.2] - 2026-09-24
+
+### 新增
+- **账号鉴权**：新增 `lib/auth.js` 与登录体系，默认账号 `admin/admin`（凭据存于 `data/auth.json`，可用 `REMINDER_USER` / `REMINDER_PASS` 覆盖）
+- 登录 / 登出 / 获取当前用户 / 修改密码接口，登录后签发 Token 会话（7 天有效，仅存内存）
+- 除登录、健康检查与入站 Webhook 外，所有 `/api` 接口均需有效 Token
+
+### 优化
+- 前端界面与交互大幅重构（`app.js` / `index.html` / `styles.css` 重写），体验与样式升级
+
+## [1.0.1] - 2026-09-24
+
+### 优化
+- 优化各 Windows 批处理脚本（启动 / 停止 / 推送 / 拉取 / 打包），提升兼容性与健壮性
 
 ## [1.0.0] - 2026-09-24
 
@@ -27,7 +59,7 @@
 - **Windows 脚本**：`运行.bat`（启动并打开浏览器）、`停止.bat`（释放 9530 端口）
 - **GitHub 同步**：`推送.bat` / `拉取.bat` + `push.js` / `pull.js`，读取 `.env` 自动完成初始化、提交与同步
 - **文档**：`README.md`（功能、运行、接口、打包、同步说明），页面底部版权信息
-- **打包脚本**：`打包fpk.bat` / `fnos/build-fpk.sh`（飞牛 fnOS 安装包，输出到 `fpk/`），`打包win-zip.bat` / `打包linux-zip.sh` / `打包macos-zip.sh`（三平台离线 zip，输出到 `dist/`，各自附带 `运行.bat` / `启动.sh` / `启动.command`）
+- **打包脚本**：`打包fpk.bat` / `fnos/build-fpk.sh`（飞牛 fnOS 安装包，输出到 `dist/`）、`打包win-zip.bat` / `打包linux-zip.bat` / `打包macos-zip.bat`（三平台离线 zip，输出到 `dist/`，各自附带 `运行.bat` / `启动.sh` / `启动.command`）；另有 `全部打包.bat`（一次产出全部平台包）与 `发布.bat` / `release.js`（一键打 tag、建 GitHub Release 并上传产物）
 - **网络**：服务监听 `::` 双栈，同时支持 IPv4 与 IPv6 访问，宿主不支持 IPv6 时自动回退 `0.0.0.0`
 - **数据目录**：可通过环境变量 `REMINDER_DATA_DIR` 指定，fnOS 包默认指向共享文件夹 `reminder/data`
 
@@ -40,7 +72,7 @@
 ## 版本说明
 
 - 服务默认端口 `9530`（`server.js` 的 `PORT` 常量，可用环境变量覆盖）
-- 数据文件：`data/reminders.json`、`data/settings.json`、`data/notify-sent.json`、`data/notify-log.json`，建议定期备份
+- 数据文件：`data/reminders.json`、`data/settings.json`、`data/notify-sent.json`、`data/notify-log.json`、`data/auth.json`（账号凭据），建议定期备份
 
 ---
 

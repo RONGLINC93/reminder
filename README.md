@@ -14,6 +14,7 @@
 - 通知测试、手动推送指定提醒、推送记录查看
 - 对外入站接口：外部系统带 Token 调用即可把消息转发到已启用的机器人
 - 顶部统计（今日提醒 / 本月安排 / 7 天内）与「即将到来」侧栏
+- 账号鉴权：默认 `admin/admin`，登录后签发 Token 会话（7 天有效），所有数据接口均需登录
 
 ## 技术栈
 
@@ -30,7 +31,8 @@ reminder/
 ├── lib/
 │   ├── dates.js         # 日期键、加减天数、重复规则推算
 │   ├── lunar.js         # 农历 / 节日 / 干支生肖换算
-│   └── notifier.js      # 各通知渠道发送与到点检查
+│   ├── notifier.js      # 各通知渠道发送与到点检查
+│   └── auth.js          # 账号鉴权：登录 / 登出 / 改密、Token 会话
 ├── public/
 │   ├── index.html       # 前端单页应用
 │   ├── styles.css
@@ -40,7 +42,8 @@ reminder/
 │   ├── reminders.json   # 提醒列表
 │   ├── settings.json    # 站点设置与通知配置
 │   ├── notify-sent.json # 已推送记录（防重复）
-│   └── notify-log.json  # 推送日志
+│   ├── notify-log.json  # 推送日志
+│   └── auth.json        # 账号凭据（默认 admin/admin，可用环境变量覆盖）
 ├── 运行.bat / 停止.bat  # Windows 一键启动 / 停止
 ├── 推送.bat / 拉取.bat  # GitHub 同步入口
 └── push.js / pull.js    # 推送 / 拉取脚本（读取 .env）
@@ -77,6 +80,17 @@ Windows 用户直接双击 `运行.bat` 即可（自动释放占用的 9530 端�
 5. 「通知」页配置机器人：填好对应通道参数后点「测试」验证，可查看推送记录
 6. 设置里可调整每周第一天、是否显示农历 / 节假日、每日推送时间
 
+## 账号与登录
+
+为便于在局域网 / 公网安全地使用，应用内置账号鉴权：
+
+- 默认账号 `admin` / 密码 `admin`，凭据保存在 `data/auth.json`
+- 可用环境变量覆盖初始账号密码：`REMINDER_USER`、`REMINDER_PASS`
+- 登录后服务端签发随机 Token，会话有效期 7 天（仅存内存，进程重启需重新登录）
+- 除登录、健康检查与入站 Webhook 外，所有 `/api` 接口都需要有效 Token，前端会自动携带
+- 「设置」中可修改密码，修改后所有已登录会话立即失效，需重新登录
+- 忘记密码：删除 `data/auth.json` 后重启服务，将按默认值（或环境变量）重建
+
 ## 通知渠道配置
 
 | 通道 | 关键参数 |
@@ -105,6 +119,12 @@ Windows 用户直接双击 `运行.bat` 即可（自动释放占用的 9530 端�
 | GET | `/api/notify/logs` | 推送记录（`?limit`，最多 100） |
 | POST | `/api/webhook/notify` | 入站通知转发（需 Token） |
 | GET | `/api/health` | 健康检查 |
+| POST | `/api/login` | 登录（body：`user`、`pass`），返回 Token |
+| POST | `/api/logout` | 登出（使当前会话失效） |
+| GET | `/api/auth/me` | 获取当前登录用户 |
+| POST | `/api/auth/change` | 修改密码（body：`oldPass`、`newPass`），改后所有会话失效 |
+
+> 除登录、健康检查与入站 Webhook 外，所有 `/api` 接口需在请求头 `Authorization: Bearer <token>` 携带登录 Token，前端会自动附加。
 
 ### 提醒对象结构
 
@@ -163,7 +183,7 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxxx
 
 ## 注意事项
 
-- 项目未做鉴权，仅建议在本地或内网使用，不要直接暴露到公网
+- 已内置账号鉴权，但默认密码为 `admin`，**部署到公网前请务必修改密码**（设置页或 `REMINDER_USER` / `REMINDER_PASS` 环境变量）；数据接口暴露到公网仍需谨慎
 - `.env` 与 `data/` 已加入 `.gitignore`，令牌与提醒数据不会上传到仓库
 - 定时推送默认每分钟检查一次，同一条提醒的同一天只会推送一次
 
