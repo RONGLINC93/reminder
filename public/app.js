@@ -1,11 +1,35 @@
 /* 提醒网站前端逻辑 */
 
+// 类型图标：内联 SVG（线性风格，stroke=currentColor），在彩色底/浅底上均能自适应显示
+const TYPE_ICON = {
+  event: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,
+  birthday: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="1.5"/><path d="M3 12h18M12 8v13"/><path d="M12 8H7.5a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8z"/><path d="M12 8h4.5a2.5 2.5 0 0 0 0-5C13 3 12 8 12 8z"/></svg>`,
+  todo: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 9-9"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
+  anniversary: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7.5-4.6-10-9.3C.6 8.4 2.3 5 5.5 5 7.5 5 9 6.3 12 9c3-2.7 4.5-4 6.5-4 3.2 0 4.9 3.4 3.5 6.7C19.5 16.4 12 21 12 21z"/></svg>`,
+  other: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>`,
+};
+
 const TYPE_META = {
-  event: { label: '事件', icon: '📅', color: 'indigo' },
-  birthday: { label: '生日', icon: '🎂', color: 'rose' },
-  todo: { label: '办事', icon: '✅', color: 'emerald' },
-  anniversary: { label: '纪念日', icon: '💝', color: 'violet' },
-  other: { label: '其他', icon: '🔔', color: 'amber' },
+  event: { label: '事件', icon: TYPE_ICON.event, color: 'indigo' },
+  birthday: { label: '生日', icon: TYPE_ICON.birthday, color: 'rose' },
+  todo: { label: '办事', icon: TYPE_ICON.todo, color: 'emerald' },
+  anniversary: { label: '纪念日', icon: TYPE_ICON.anniversary, color: 'violet' },
+  other: { label: '其他', icon: TYPE_ICON.other, color: 'amber' },
+};
+
+// 其它 UI 线性图标（与类型图标同一风格，stroke=currentColor）
+const UI_ICON = {
+  gear: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+  bell: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>`,
+  lock: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+  ok: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>`,
+  bad: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>`,
+  date: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,
+  repeat: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`,
+  alarm: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/><path d="M5 3L2 6M19 3l3 3"/></svg>`,
+  rest: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`,
+  work: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.8-.7-.7-2.8z"/></svg>`,
+  user: `<svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
 };
 
 const COLOR_LIST = ['indigo', 'rose', 'amber', 'emerald', 'sky', 'violet'];
@@ -514,7 +538,7 @@ function renderCalendar() {
       entries.push({
         cls: `mini holiday-pill ${hol.work ? 'work' : 'rest'}`,
         style: '',
-        text: hol.work ? `🔧 ${hol.name}·调休` : `🎉 ${hol.name}`,
+        text: hol.work ? `${UI_ICON.work} ${hol.name}·调休` : `${UI_ICON.rest} ${hol.name}`,
         title: hol.work ? `${hol.name}（调休上班）` : `${hol.name}（放假）`,
         dot: hol.work ? '#98a2b6' : '#d8342f',
       });
@@ -570,13 +594,23 @@ function renderList() {
       return a.next.localeCompare(b.next);
     });
 
-  document.getElementById('list-summary').textContent = `共 ${items.length} 条提醒，按最近发生时间排序`;
+  const holRows = state.settings.showHoliday !== false ? holidayRowsWithin(today, 60) : [];
+
+  document.getElementById('list-summary').textContent =
+    `共 ${items.length} 条提醒${holRows.length ? `，${holRows.length} 个节假日` : ''}，按最近发生时间排序`;
+
   const box = document.getElementById('list-container');
-  if (!items.length) {
+  if (!items.length && !holRows.length) {
     box.innerHTML = `<div class="empty">还没有提醒，点击右上角「新建提醒」开始吧</div>`;
     return;
   }
-  box.innerHTML = `<div class="day-list">${items.map(({ it, next }) => itemCardHtml(it, next)).join('')}</div>`;
+
+  const merged = [];
+  for (const r of items) merged.push({ date: r.next, html: itemCardHtml(r.it, r.next) });
+  for (const r of holRows) merged.push({ date: r.next, html: holidayCardHtml(r.next, r.hol) });
+  merged.sort((a, b) => a.date.localeCompare(b.date));
+
+  box.innerHTML = `<div class="day-list">${merged.map((m) => m.html).join('')}</div>`;
   bindItemActions(box);
 }
 
@@ -600,9 +634,9 @@ function itemCardHtml(it, next) {
           ${it.done ? '<span class="tag">已完成</span>' : `<span class="${tagCls}">${countdownText(days)}</span>`}
         </div>
         <div class="item-meta">
-          <span>🗓 ${next}${it.time ? ` ${it.time}` : ''}${age}${lunarTxt}</span>
-          ${it.repeat !== 'none' ? `<span>🔁 ${REPEAT_LABEL[it.repeat]}</span>` : ''}
-          ${it.leadDays ? `<span>⏰ 提前 ${it.leadDays} 天</span>` : ''}
+          <span>${UI_ICON.date} ${next}${it.time ? ` ${it.time}` : ''}${age}${lunarTxt}</span>
+          ${it.repeat !== 'none' ? `<span>${UI_ICON.repeat} ${REPEAT_LABEL[it.repeat]}</span>` : ''}
+          ${it.leadDays ? `<span>${UI_ICON.alarm} 提前 ${it.leadDays} 天</span>` : ''}
         </div>
         ${it.note ? `<div class="item-note">${escapeHtml(it.note)}</div>` : ''}
       </div>
@@ -658,20 +692,41 @@ function bindItemActions(root) {
 /** 法定节假日提示卡片（右侧面板与即将到来列表用） */
 function holidayCardHtml(key, hol) {
   const color = hol.work ? '#98a2b6' : '#d8342f';
-  const title = hol.work ? `🔧 ${hol.name} · 调休上班` : `🎉 ${hol.name}`;
+  const title = hol.work ? `${UI_ICON.work} ${escapeHtml(hol.name)} · 调休上班` : `${UI_ICON.rest} ${escapeHtml(hol.name)}`;
   const tag = hol.work ? '<span class="tag work-tag">补班</span>' : '<span class="tag holiday-tag">放假</span>';
   return `
     <div class="item-card holiday-card">
       <div class="item-bar" style="background:${color}"></div>
       <div class="item-main">
         <div class="item-title">
-          <span>${escapeHtml(title)}</span>
+          <span>${title}</span>
           ${tag}
         </div>
         <div class="item-meta"><span>法定节假日 · ${key}</span></div>
       </div>
     </div>
   `;
+}
+
+/** 未来 days 天内的法定节假日，同一假期合并为一条（含连休天数），调休单独列出 */
+function holidayRowsWithin(today, days) {
+  const out = [];
+  if (state.settings.showHoliday === false) return out;
+  const groups = new Map();
+  for (let i = 0; i <= days; i += 1) {
+    const key = addDaysKey(today, i);
+    const hol = holidayOf(key);
+    if (!hol) continue;
+    if (hol.work) {
+      out.push({ next: key, hol, span: 0 });
+      continue;
+    }
+    const gk = `${hol.target}|${hol.name}`;
+    if (!groups.has(gk)) groups.set(gk, { next: key, hol, span: 0 });
+    groups.get(gk).span += 1;
+  }
+  groups.forEach((g) => out.push(g));
+  return out;
 }
 
 function renderSide() {
@@ -753,22 +808,7 @@ function renderUpcoming() {
     .map(({ it, next }) => ({ next, sortKey: next, kind: 'item', it }));
 
   // 未来 60 天内的法定节假日：同一假期合并为一条，调休单独列出
-  if (state.settings.showHoliday !== false) {
-    const groups = new Map();
-    for (let i = 0; i <= 60; i += 1) {
-      const key = addDaysKey(today, i);
-      const hol = holidayOf(key);
-      if (!hol) continue;
-      if (hol.work) {
-        rows.push({ next: key, sortKey: key, kind: 'holiday', hol, span: 0 });
-        continue;
-      }
-      const gk = `${hol.target}|${hol.name}`;
-      if (!groups.has(gk)) groups.set(gk, { next: key, hol, span: 0 });
-      groups.get(gk).span += 1;
-    }
-    groups.forEach((g) => rows.push({ next: g.next, sortKey: g.next, kind: 'holiday', hol: g.hol, span: g.span }));
-  }
+  holidayRowsWithin(today, 60).forEach((r) => rows.push({ next: r.next, sortKey: r.next, kind: 'holiday', hol: r.hol, span: r.span }));
 
   rows.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
   const top = rows.slice(0, 10);
@@ -789,7 +829,7 @@ function renderUpcoming() {
         <div class="upcoming-row ${isWork ? 'holiday-work' : 'holiday-rest'}" data-date="${row.next}" data-rest="${isWork ? '0' : '1'}" data-span="${row.span}">
           ${when}
           <span class="upcoming-title" title="${escapeHtml(row.hol.name)}${isWork ? '（调休上班）' : `（${row.next} 起${span ? `连休 ${row.span} 天` : '放假'}）`}">
-            ${isWork ? '🔧' : '🎉'} ${escapeHtml(row.hol.name)}${isWork ? '·调休' : span}
+            ${isWork ? UI_ICON.work : UI_ICON.rest} ${escapeHtml(row.hol.name)}${isWork ? '·调休' : span}
           </span>
           ${date}
         </div>
@@ -1187,7 +1227,7 @@ function clearAuth() {
 
 function setUserName(name) {
   const el = document.getElementById('user-name');
-  if (el) el.textContent = name ? `👤 ${name}` : '';
+  if (el) el.innerHTML = name ? `${UI_ICON.user} ${escapeHtml(name)}` : '';
 }
 
 function showLoginError(msg) {
@@ -1445,7 +1485,7 @@ async function testNotify() {
     await autoSave(notifyPart(), {});
     const r = await api('/api/notify/test', { method: 'POST', body: JSON.stringify({ channel: 'all' }) });
     box.innerHTML = r.results
-      .map((x) => `<span class="${x.ok ? 'ok' : 'bad'}">${x.ok ? '✅' : '❌'} ${escapeHtml(x.label)}${x.ok ? '' : `：${escapeHtml(x.msg)}`}</span>`)
+      .map((x) => `<span class="${x.ok ? 'ok' : 'bad'}">${x.ok ? UI_ICON.ok : UI_ICON.bad} ${escapeHtml(x.label)}${x.ok ? '' : `：${escapeHtml(x.msg)}`}</span>`)
       .join(' ');
     loadNotifyLogs();
   } catch (err) {

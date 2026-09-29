@@ -214,6 +214,9 @@ button { font-family: inherit; cursor: pointer; }
 .chip.active { background: var(--soft); border-color: #c9d0ff; color: var(--primary-dark); font-weight: 600; }
 .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 
+/* 类型线性图标：跟随文字颜色 (currentColor)，在各背景下自适应 */
+.ti { width: 1em; height: 1em; vertical-align: -0.15em; flex: none; display: inline-block; }
+
 /* -------------------------------- 日历 -------------------------------- */
 
 .weekdays {
@@ -610,7 +613,9 @@ button { font-family: inherit; cursor: pointer; }
   font-size: 14px;
   line-height: 1;
   background: var(--soft);
+  color: var(--ink);
 }
+.chan-ico svg { width: 16px; height: 16px; display: block; }
 .chan-wecom .chan-ico { background: #e7f8f1; }
 .chan-wecom-app .chan-ico { background: #e8f1ff; }
 .chan-qq .chan-ico { background: #e6f5fd; }
