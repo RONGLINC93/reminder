@@ -235,8 +235,13 @@ function extractChangelog(v) {
   const clPath = path.join(ROOT, 'CHANGELOG.md');
   if (!fs.existsSync(clPath)) return null;
   const text = fs.readFileSync(clPath, 'utf-8');
+  // 1) 精确版本段
   const re = new RegExp(`^##\\s+(?:v)?\\[?${escapeRegex(v)}\\]?\\b[\\s\\S]*?(?=^## |\\Z)`, 'm');
-  const m = text.match(re);
+  let m = text.match(re);
+  // 2) 回退到 [未发布] 段（当前开发版本的变更都记在这里）
+  if (!m) {
+    m = text.match(/^##\s+\[未发布\][\s\S]*?(?=^## |\Z)/m);
+  }
   if (!m) return null;
   const block = m[0];
   const lines = block.split(/\r?\n/);
@@ -303,6 +308,29 @@ async function uploadAsset(release, filePath) {
 //      仅在 Release 创建成功后调用 (exit 0 / exit 2 均算发布完成);
 //      失败只警告, 不影响发布结果。
 // ===========================================================================
+
+// 把 CHANGELOG.md 顶部的 [未发布] 段“转正”为已发布版本，并在顶部新建下一版 [未发布] 段，
+// 使下次发布时 [未发布] 段能继续承载新变更的说明。找不到 [未发布] 段则跳过。
+function promoteChangelog(cur, next) {
+  const clPath = path.join(ROOT, 'CHANGELOG.md');
+  if (!fs.existsSync(clPath)) return false;
+  let text = fs.readFileSync(clPath, 'utf-8');
+  const reUnreleased = /^##\s+\[未发布\][^\n]*/m;
+  if (!reUnreleased.test(text)) {
+    console.log('CHANGELOG.md 无 [未发布] 段，跳过转正');
+    return false;
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  // 先把 [未发布] 标题行改为已发布版本标题
+  text = text.replace(reUnreleased, `## [${cur}] - ${today}`);
+  // 再在它前面插入新的 [未发布] 段（空段，承载下一版变更）
+  const reCur = new RegExp(`^##\\s+\\[${escapeRegex(cur)}\\] - ${today}[^\\n]*`, 'm');
+  text = text.replace(reCur, `## [未发布]（当前开发版本 ${next}）\n\n$&`);
+  fs.writeFileSync(clPath, text, 'utf-8');
+  console.log(`CHANGELOG.md 已转正: [未发布] -> [${cur}] - ${today}（新增 [未发布] ${next}）`);
+  return true;
+}
+
 function bumpVersionAndCommit() {
   const pkgPath = path.join(ROOT, 'package.json');
   let text;
@@ -336,9 +364,24 @@ function bumpVersionAndCommit() {
     return;
   }
   console.log(`版本号已叠加: ${cur} -> ${next} (package.json)`);
+
+  // CHANGELOG.md: 把 [未发布] 段转正当前发布版本，并新建下一版 [未发布] 段
+  let changelogChanged = false;
+  try {
+    changelogChanged = promoteChangelog(cur, next);
+  } catch (e) {
+    console.warn(`[警告] CHANGELOG.md 转正失败: ${e.message}`);
+  }
+
   try {
     execFileSync('git', ['add', 'package.json'], { cwd: ROOT, stdio: 'ignore' });
-    execFileSync('git', ['commit', '-m', `chore: 发布 v${cur} 后叠加版本号至 ${next}`], { cwd: ROOT, stdio: 'ignore' });
+    if (changelogChanged) {
+      execFileSync('git', ['add', 'CHANGELOG.md'], { cwd: ROOT, stdio: 'ignore' });
+    }
+    const msg = changelogChanged
+      ? `chore: 发布 v${cur} 后叠加版本号至 ${next}，并转正 CHANGELOG`
+      : `chore: 发布 v${cur} 后叠加版本号至 ${next}`;
+    execFileSync('git', ['commit', '-m', msg], { cwd: ROOT, stdio: 'ignore' });
     console.log('版本号变更已提交到本地 git (未推送, 随下次 推送.bat 一起推送)');
   } catch (e) {
     console.warn('[警告] 自动 commit 失败，请手工提交 package.json 的版本号变更');

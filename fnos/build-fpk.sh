@@ -46,6 +46,9 @@ else
   echo "    package.json 中未找到 version，保持 manifest 原值"
 fi
 
+echo "[3.5/6] 把 CHANGELOG.md 当前版本的更新说明写入 manifest changelog 与升级向导 ..."
+node "${HERE}/sync-changelog.js"
+
 echo "[4/6] 统一换行符为 LF，并赋予脚本可执行权限 ..."
 while IFS= read -r -d '' f; do
   case "${f}" in

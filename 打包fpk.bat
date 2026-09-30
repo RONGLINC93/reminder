@@ -63,6 +63,10 @@ echo [3/6] Sync manifest version from package.json...
 powershell -NoProfile -ExecutionPolicy Bypass -File "%TOOLS%\sync-version.ps1" -From "%PROJ%package.json" -Manifest "%PKG%\manifest"
 if errorlevel 1 goto fail
 
+echo [3.5/6] Sync real changelog into manifest + upgrade wizard (from CHANGELOG.md)...
+node "%TOOLS%\sync-changelog.js"
+if errorlevel 1 goto fail
+
 echo [4/6] Normalize newlines to LF...
 powershell -NoProfile -ExecutionPolicy Bypass -File "%TOOLS%\normalize-lf.ps1" -Path "%PKG%"
 if errorlevel 1 goto fail
