@@ -374,15 +374,20 @@ function bumpVersionAndCommit() {
   }
 
   try {
-    execFileSync('git', ['add', 'package.json'], { cwd: ROOT, stdio: 'ignore' });
-    if (changelogChanged) {
-      execFileSync('git', ['add', 'CHANGELOG.md'], { cwd: ROOT, stdio: 'ignore' });
+    // 收集本次要提交的文件：版本号 + 更新日志，以及打包步骤生成的 fpk 模板更新说明
+    const toCommit = ['package.json'];
+    if (changelogChanged) toCommit.push('CHANGELOG.md');
+    // fnos/reminder/manifest 的 changelog 字段与 wizard/upgrade 升级向导由打包步骤写入，
+    // 发布后一并提交，确保仓库与已发布版本的“更新说明”三处（CHANGELOG.md / manifest / 升级向导）保持一致
+    for (const f of ['fnos/reminder/manifest', 'fnos/reminder/wizard/upgrade']) {
+      if (fs.existsSync(path.join(ROOT, f))) toCommit.push(f);
     }
+    execFileSync('git', ['add', ...toCommit], { cwd: ROOT, stdio: 'ignore' });
     const msg = changelogChanged
-      ? `chore: 发布 v${cur} 后叠加版本号至 ${next}，并转正 CHANGELOG`
+      ? `chore: 发布 v${cur} 后叠加版本号至 ${next}，并同步更新日志`
       : `chore: 发布 v${cur} 后叠加版本号至 ${next}`;
     execFileSync('git', ['commit', '-m', msg], { cwd: ROOT, stdio: 'ignore' });
-    console.log('版本号变更已提交到本地 git (未推送, 随下次 推送.bat 一起推送)');
+    console.log('版本号与更新日志已提交到本地 git (未推送, 随下次 推送.bat 一起推送)');
   } catch (e) {
     console.warn('[警告] 自动 commit 失败，请手工提交 package.json 的版本号变更');
   }
