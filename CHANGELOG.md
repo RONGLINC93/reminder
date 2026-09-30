@@ -3,7 +3,12 @@
 本项目所有重要变更都会记录在这里。
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)。
 
-## [未发布]（当前开发版本 1.0.6）
+## [未发布]（当前开发版本 1.0.7）
+
+### 优化
+- **更新说明改为从 CHANGELOG.md 自动生成**：新增 `fnos/sync-changelog.js`，打包 fpk 时把当前版本的真实变更写入飞牛应用中心的 `changelog` 字段与升级向导；`release.js` 的 GitHub Release 正文同样取该段，发布后自动将 `[未发布]` 段转正为对应版本并新建下一版 `[未发布]` 段
+
+## [1.0.6] - 2026-09-29
 
 ### 变更
 - 前端与 `server.js` 小幅修复与微调（登录态处理、页面细节）

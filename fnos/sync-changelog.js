@@ -75,11 +75,9 @@ function toHtml(block) {
 function setManifestChangelog(plain) {
   const manifestPath = path.join(PKG_DIR, 'manifest');
   let s = fs.readFileSync(manifestPath, 'utf-8');
-  if (/^[ \t]*changelog[ \t]*=/.test(s)) {
-    s = s.replace(/^[ \t]*changelog[ \t]*=.*$/m, 'changelog               = ' + plain);
-  } else {
-    s = s.replace(/\s+$/, '') + '\n' + 'changelog               = ' + plain + '\n';
-  }
+  // 删除所有已有的 changelog 行（避免重复），再在末尾追加一行规范格式
+  s = s.replace(/^[ \t]*changelog[ \t]*=.*$(\r?\n)?/gm, '');
+  s = s.replace(/\s+$/, '') + '\n' + 'changelog               = ' + plain + '\n';
   s = s.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   fs.writeFileSync(manifestPath, s, 'utf-8');
 }
